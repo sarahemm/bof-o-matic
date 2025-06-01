@@ -85,3 +85,9 @@ function gridSchedulePopup(timeslot, modalTitle) {
   scheduleModal = new bootstrap.Modal('#scheduleModal');
   scheduleModal.show();
 }
+
+function readyRenameRoom(name, id) {
+  document.getElementById('renameTitle').innerText = "Rename " + name;
+  document.getElementById('newName').value = name;
+  document.getElementById('roomId').value = id;
+}

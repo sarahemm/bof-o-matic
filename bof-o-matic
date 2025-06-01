@@ -49,6 +49,9 @@ class Schedule < Sequel::Model
   many_to_one :scheduler
 end
 
+class Room < Sequel::Model
+end
+
 enable :sessions
 set :port, 4590
 
@@ -202,6 +205,31 @@ post '/grid' do
   end
 
   redirect '/grid'
+end
+
+get '/rooms' do
+  require_logged_in
+
+  @rooms = Room.all
+
+  haml :rooms
+end
+
+post '/rooms' do
+  require_logged_in
+
+  room = Room[params[:id]]
+  if(params[:action] == 'toggle_active') then
+    room.active = !room.active
+    room.save
+  elsif(params[:action] == 'rename') then
+    room.room_name = params[:name]
+    room.save
+  else
+    pp params
+  end
+
+  redirect '/rooms'
 end
 
 get '/login' do

@@ -1,0 +1,40 @@
+%h2 Rooms
+%table.table.table-striped
+  %thead
+    %tr
+      %th{scope: 'col'} Room Name
+      %th{scope: 'col'} Status
+      %th{scope: 'col'} Controls
+  %tbody
+    - @rooms.each do |room|
+      %tr
+        %td= room.room_name
+        %td= room.active ? "Active" : "Inactive"
+        %td
+          %form{method: :post}
+            %button.btn.btn-primary{type: :button, 'data-bs-toggle' => 'modal', 'data-bs-target' => '#renameModal', onClick: "readyRenameRoom('#{room.room_name}', #{room.id});"}
+              Rename  
+            %input{type: :hidden, name: 'id', value: room.id}
+            %input{type: :hidden, name: 'action', value: 'toggle_active'}
+            %button.btn.btn-primary{type: :submit}
+              Toggle Active
+
+.modal.fade#renameModal{tabIndex: -1, role: :dialog}
+  .modal-dialog{role: :document}
+    .modal-content
+      %form{method: :post}
+        .modal-header
+          %h5.modal-title#renameModalLabel
+            %span#renameTitle
+          %button.btn-close{type: :button, 'data-bs-dismiss' => 'modal'}
+        .modal-body
+          %label{for: "newName"}
+            New Name:
+          %input{type: :hidden, name: 'action', value: 'rename'}
+          %input.form-control#newName{name: 'name', autocomplete: 'off'}
+          %input.form-control#roomId{name: 'id', type: :hidden}
+        .modal-footer
+          %button.btn.btn-secondary{type: :button, 'data-bs-dismiss' => 'modal'}
+            Cancel
+          %button.btn.btn-primary{type: :submit}
+            Save New Name
