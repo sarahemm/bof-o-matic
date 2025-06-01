@@ -1,0 +1,251 @@
+#!/usr/bin/ruby
+
+require 'pp'
+require 'haml'
+require 'yaml'
+require 'time'
+require 'sinatra'
+require 'sequel'
+require 'bcrypt'
+require 'net/http'
+
+Sequel.default_timezone = :local
+DB = Sequel.connect("sqlite://#{Dir.pwd}/bof-o-matic.sqlite3")
+CFG = YAML.load(File.read("bof-o-matic.yaml"))
+
+configure do
+  set :conference_name, CFG['conference_name']
+  set :conference_start_time, Time.parse(CFG['conference_starts'])
+  set :conference_end_time, Time.parse(CFG['conference_ends'])
+  set :slot_length, CFG['slot_length']
+end
+
+helpers do
+  def nav_link(uri:, text:)
+    haml_tag :li, class: 'nav-item'
+    if(request.path_info == uri) then
+      haml_tag :a, text, href: uri, class: 'nav-link active', 'aria-current': :page
+    else
+      haml_tag :a, text, href: uri, class: 'nav-link'
+    end
+  end
+end
+
+class Scheduler < Sequel::Model
+  one_to_many :schedules
+end
+
+class Proposal < Sequel::Model
+  one_to_many :interest
+  one_to_one :schedule
+end
+
+class Interest < Sequel::Model
+  many_to_one :proposal
+end
+
+class Schedule < Sequel::Model
+  one_to_one :proposal
+  many_to_one :scheduler
+end
+
+enable :sessions
+set :port, 4590
+
+def require_logged_in
+  redirect '/login' unless session[:user]
+end
+
+def is_logged_in?
+  session[:user]
+end
+
+not_found do
+  'Path not found.' 
+end
+
+get '/'  do
+  redirect '/proposals'
+end
+
+get '/proposals' do
+  @proposals = Proposal.association_left_join(:interest)
+    .select(Sequel[:proposals][:id], :title, :description, :submitted_by, :name, :room)
+    .association_left_join(:schedule)
+    .select_more{Sequel.as(count(:name), :count)}
+    .group(:title)
+
+  haml :proposals
+end
+
+get '/proposals/scheduled' do
+  @proposals = Proposal.association_left_join(:interest)
+    .association_join(:schedule)
+    .select(Sequel[:proposals][:id], :title, :description, :submitted_by, :name)
+    .select_more{Sequel.as(count(:name), :count)}
+    .group(:title)
+
+  haml :proposals
+end
+
+get '/proposals/unscheduled' do
+  @proposals = Proposal.association_left_join(:interest)
+    .association_left_join(:schedule)
+    .select(Sequel[:proposals][:id], :title, :description, :submitted_by, :name)
+    .where(start_time: nil)
+    .select_more{Sequel.as(count(:name), :count)}
+    .group(:title)
+
+  haml :proposals
+end
+
+get '/proposals/new' do
+  haml :proposal_add
+end
+
+post '/proposals/new' do
+  data = {
+    :submitted_by => params[:name],
+    :submitter_email => params[:email],
+    :title => params[:title],
+    :description => params[:description],
+    :scheduler_notes => params[:notes]
+  }
+  new_id = DB[:proposals].insert(data)
+
+  redirect "/proposals/#{new_id}"
+end
+
+get '/proposals/:id' do
+  @proposal = Proposal[params[:id]]
+  haml :proposal
+end
+
+get '/proposals/:id/interest' do
+  @proposal = Proposal[params[:id]]
+  haml :interest_add
+end
+
+post '/proposals/:id/interest' do
+  data = {
+    :proposal_id => params[:id],
+    :name => params[:name],
+    :email => params[:email],
+  }
+  data[:submitted_at] = Time.now
+  DB[:interests].insert(data)
+
+  redirect "/proposals/#{params[:id]}"
+end
+
+get '/scheduler' do
+  require_logged_in
+
+  @proposals = Proposal.association_left_join(:interest)
+    .association_left_join(:schedule)
+    .select(Sequel[:proposals][:id], :title, :description, :submitted_by, :name)
+    .where(start_time: nil)
+    .select_more{Sequel.as(count(:name), :count)}
+    .group(:title)
+
+  haml :scheduler
+end
+
+post '/scheduler' do
+  require_logged_in
+
+  data = {
+    :proposal_id => params[:proposal_id],
+    :room => params[:room],
+    :start_time => Time.parse(params[:slot]).strftime("%Y-%m-%d %H:%M:%S"),
+    :scheduled_by => session[:user]
+  }
+  if(params[:room] != '') then
+    # only save the record if it's complete
+    DB[:schedules].insert(data)
+  end
+
+  redirect '/scheduler'
+end
+
+get '/grid' do
+  @proposals = Proposal.association_left_join(:interest)
+    .association_join(:schedule)
+    .select(Sequel[:proposals][:id], :title, :description, :name, :start_time, :room)
+    .select_more{Sequel.as(count(:name), :count)}
+    .group(:title)
+  
+  if is_logged_in? then
+    @unscheduled_proposals = Proposal.association_left_join(:interest)
+      .association_left_join(:schedule)
+      .select(Sequel[:proposals][:id], :title, :description, :submitted_by, :name)
+      .where(start_time: nil)
+      .select_more{Sequel.as(count(:name), :count)}
+      .group(:title)
+  end
+
+  haml :grid
+end
+
+post '/grid' do
+  require_logged_in
+
+  data = {
+    :proposal_id => params[:proposal_id],
+    :room => params[:room],
+    :start_time => Time.parse(params[:timeslot]).strftime("%Y-%m-%d %H:%M:%S"),
+    :scheduled_by => session[:user]
+  }
+  if(params[:room] != '') then
+    # only save the record if it's complete
+    DB[:schedules].insert(data)
+  end
+
+  redirect '/grid'
+end
+
+get '/login' do
+  haml :login
+end
+
+post '/login' do
+  user = DB[:schedulers].where(username: params[:username]).first
+  if user and BCrypt::Password.new(user[:pwhash]) == params[:password] then
+    session[:user] = params[:username]
+    redirect '/'
+  else
+    redirect '/login'
+  end
+end
+
+get '/logout' do
+  session.delete :user
+  redirect '/'
+end
+
+get '/password' do
+  require_logged_in
+
+  haml :password
+end
+
+post '/password' do
+  require_logged_in
+
+  user = Scheduler.where(username: session[:user]).first
+  if(params[:new] != params[:newagain]) then
+    @message = "New passwords don't match."
+    haml :password
+  elsif(params[:new].length < 8)
+    @message = "New password must be at least 8 characters."
+    haml :password
+  elsif(BCrypt::Password.new(user[:pwhash]) != params[:existing]) then
+    @message = "Existing password is incorrect."
+    haml :password
+  else
+    user.update pwhash: BCrypt::Password.create(params[:new])
+    @message = "Password successfully changed."
+    haml :password
+  end
+end
+

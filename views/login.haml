@@ -1,0 +1,10 @@
+%h2 Scheduler Login
+%form{method: 'post'}
+  %div.mb-3
+    %label.form-label{for: 'username'} Username:
+    %input.form-control#username{name: 'username', required: true}
+  %div.mb-3
+    %label.form-label{for: 'password'} Password:
+    %input.form-control#password{type: 'password', name: 'password', required: true}
+  %button.btn.btn-primary.mb-3{type: 'submit'} Log In
+%div.form-text

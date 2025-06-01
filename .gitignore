@@ -1,5 +1,8 @@
 *.gem
 *.rbc
+*.sqlite3
+add-test-data.sql
+*bootstrap*
 /.config
 /coverage/
 /InstalledFiles

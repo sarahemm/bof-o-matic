@@ -1,0 +1,17 @@
+%h2 #{@proposal[:title]}
+%div
+  %h3= "#{@proposal[:description]}"
+  %p= "Proposed by: #{@proposal[:submitted_by]}"
+  - if(not @proposal.schedule_dataset.empty?) then
+    - schedule_entry = @proposal.schedule_dataset.first
+    - start_time = schedule_entry[:start_time]
+    %p
+      %b= "Scheduled! BoF will take place on #{start_time.strftime('%A')} at #{start_time.strftime('%H:%M')} in #{schedule_entry[:room]}"
+  %p Interest from:
+  %ul
+    - if(@proposal.interest_dataset.empty?) then
+      %li= "None yet!"
+    - @proposal.interest_dataset.each do |interest|
+      %li= "#{interest[:name]}"
+    %li
+      %a{href: "/proposals/#{@proposal[:id]}/interest"} Register Interest

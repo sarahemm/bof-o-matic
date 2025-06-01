@@ -1,0 +1,20 @@
+%h2= "#{Time.now.year} BoF Proposals"
+%table.table.table-striped
+  %thead
+    %tr
+      %th{scope: 'col'} Title
+      %th{scope: 'col'} Proposed By
+      %th{scope: 'col'} # Interested
+      %th{scope: 'col'} Status
+
+  - @proposals.each do |proposal|
+    %tr
+      %td
+        %a{href: "/proposals/#{proposal[:id]}"}= proposal[:title]
+      %td= "#{proposal[:submitted_by]}"
+      %td= "#{proposal[:count]}"
+      %td
+        - if(proposal[:room])
+          = "Scheduled"
+        - else
+          = "Gathering Interest"

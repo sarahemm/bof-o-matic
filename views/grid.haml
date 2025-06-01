@@ -1,0 +1,56 @@
+%h2= "#{Time.now.year} BoF Schedule"
+- if is_logged_in?
+  %h3.text-info You are logged in as a scheduler, click any cell to schedule a session at that time.
+
+%table.table.table-bordered
+  %thead
+    %tr
+      %th{scope: 'col', width: '10%'} Start Time
+      - column_days = []
+      - (settings.conference_start_time.to_date..settings.conference_end_time.to_date).each do |day|
+        - column_days.append(day)
+        %th{scope: 'col', width: '30%'}
+          = day.strftime('%A')
+  %tbody
+    - this_slot_starts = Time.parse('00:00')
+    - while(this_slot_starts < Time.parse('23:59')) do
+      %tr
+        %td= this_slot_starts.strftime('%H:%M')
+        - column_days.each do |day|
+          - this_slot_time = Time.parse("#{day.strftime("%Y-%m-%d")} #{this_slot_starts.strftime("%H:%M:%S")}")
+          - if(this_slot_time < settings.conference_start_time or this_slot_time > settings.conference_end_time)
+            %td.bg-danger-subtle
+          - else
+            - timeslot = "#{day.strftime('%Y-%m-%d')} #{this_slot_starts.strftime('%H:%M')}"
+            - click_js = ""
+            - if is_logged_in?
+              - click_js = "gridSchedulePopup('#{timeslot}', '#{day.strftime('%A')} at #{this_slot_starts.strftime('%H:%M')}');"
+            %td{onClick: click_js}
+              %div{id: timeslot}
+              - @proposals.where(start_time: "#{day.strftime("%Y-%m-%d")} #{this_slot_starts.strftime("%H:%M:%S")}").each do |session|
+                %a.btn.btn-info{href: "/proposals/#{session[:id]}"}= "#{session[:title]} - #{session[:room]}"
+      - this_slot_starts += settings.slot_length * 60
+
+- if is_logged_in?
+  .modal.fade#scheduleModal{tabIndex: -1, role: :dialog}
+    .modal-dialog{role: :document}
+      .modal-content
+        %form.needs-validation{method: :post}
+          .modal-header
+            %h5.modal-title#ScheduleModalLabel
+              %div#scheduleTitle Schedule Sesson
+            %button.btn-close{type: :button, 'data-bs-dismiss' => 'modal'}
+          .modal-body
+            %input#timeslot{type: :hidden, name: 'timeslot'}
+            %label.form-label{for: 'session'} Session:
+            %select.form-control.session{name: 'proposal_id'}
+              - @unscheduled_proposals.each do |proposal|
+                %option{value: proposal[:id]}= "#{proposal[:title]} - Proposed by #{proposal[:submitted_by]} - #{proposal[:count]} interested"
+            %label.form-label{for: 'room'} Room:
+            %input.form-control.room{name: 'room', required: true}
+          .modal-footer
+            %button.btn.btn-secondary{type: :button, 'data-bs-dismiss' => 'modal'}
+              Cancel
+            %button.btn.btn-primary{type: :submit}
+              Schedule Session
+
