@@ -218,15 +218,17 @@ end
 post '/rooms' do
   require_logged_in
 
-  room = Room[params[:id]]
   if(params[:action] == 'toggle_active') then
+    room = Room[params[:id]]
     room.active = !room.active
     room.save
   elsif(params[:action] == 'rename') then
+    room = Room[params[:id]]
     room.room_name = params[:name]
     room.save
-  else
-    pp params
+  elsif(params[:action] == 'add') then
+    room = Room.new(room_name: params[:name])
+    room.save
   end
 
   redirect '/rooms'
