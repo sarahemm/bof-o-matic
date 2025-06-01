@@ -6,7 +6,7 @@
     - schedule_entry = @proposal.schedule_dataset.first
     - start_time = schedule_entry[:start_time]
     %p
-      %b= "Scheduled! BoF will take place on #{start_time.strftime('%A')} at #{start_time.strftime('%H:%M')} in #{schedule_entry[:room]}"
+      %b= "Scheduled! BoF will take place on #{start_time.strftime('%A')} at #{start_time.strftime('%H:%M')} in #{schedule_entry.room_dataset.first[:room_name]}"
   %p Interest from:
   %ul
     - if(@proposal.interest_dataset.empty?) then

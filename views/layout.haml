@@ -15,10 +15,6 @@
         .collapse.navbar-collapse#navbarSupportedContent
           %ul.navbar-nav.me-auto.mb-2.mb-lg-0
             -nav_link uri: '/proposals', text: "All #{Time.now.year} BoFs"
-            - if false
-              -# this makes the navbar look too cluttered and I don't think adds much value
-              -nav_link uri: '/proposals/scheduled', text: 'Scheduled BoFs'
-              -nav_link uri: '/proposals/unscheduled', text: 'Not-Yet-Scheduled BoFs'
             -nav_link uri: '/proposals/new', text: 'Submit Proposal'
             -nav_link uri: '/grid', text: 'Schedule Grid'
             - if is_logged_in?
@@ -35,5 +31,6 @@
               -nav_link uri: '/logout', text: 'Log Out'
             - else
               -nav_link uri: '/login', text: 'Scheduler Login'
+            -nav_link uri: '#', text: "ROOM OVERHAUL IN PROGRESS - EXPECT BROKENNESS"
     %div.container-fluid
       = yield

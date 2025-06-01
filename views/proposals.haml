@@ -14,7 +14,7 @@
       %td= "#{proposal[:submitted_by]}"
       %td= "#{proposal[:count]}"
       %td
-        - if(proposal[:room])
+        - if(proposal[:room_id])
           = "Scheduled"
         - else
           = "Gathering Interest"

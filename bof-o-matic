@@ -47,9 +47,11 @@ end
 class Schedule < Sequel::Model
   one_to_one :proposal
   many_to_one :scheduler
+  many_to_one :room
 end
 
 class Room < Sequel::Model
+  one_to_many :schedules
 end
 
 enable :sessions
@@ -73,29 +75,8 @@ end
 
 get '/proposals' do
   @proposals = Proposal.association_left_join(:interest)
-    .select(Sequel[:proposals][:id], :title, :description, :submitted_by, :name, :room)
+    .select(Sequel[:proposals][:id], :title, :description, :submitted_by, :name, :room, :room_id)
     .association_left_join(:schedule)
-    .select_more{Sequel.as(count(:name), :count)}
-    .group(:title)
-
-  haml :proposals
-end
-
-get '/proposals/scheduled' do
-  @proposals = Proposal.association_left_join(:interest)
-    .association_join(:schedule)
-    .select(Sequel[:proposals][:id], :title, :description, :submitted_by, :name)
-    .select_more{Sequel.as(count(:name), :count)}
-    .group(:title)
-
-  haml :proposals
-end
-
-get '/proposals/unscheduled' do
-  @proposals = Proposal.association_left_join(:interest)
-    .association_left_join(:schedule)
-    .select(Sequel[:proposals][:id], :title, :description, :submitted_by, :name)
-    .where(start_time: nil)
     .select_more{Sequel.as(count(:name), :count)}
     .group(:title)
 
@@ -173,8 +154,8 @@ end
 
 get '/grid' do
   @proposals = Proposal.association_left_join(:interest)
-    .association_join(:schedule)
-    .select(Sequel[:proposals][:id], :title, :description, :name, :start_time, :room)
+    .association_join(schedule: :room)
+    .select(Sequel[:proposals][:id], :title, :description, :name, :start_time, :room_name)
     .select_more{Sequel.as(count(:name), :count)}
     .group(:title)
   
@@ -185,6 +166,7 @@ get '/grid' do
       .where(start_time: nil)
       .select_more{Sequel.as(count(:name), :count)}
       .group(:title)
+    @rooms = Room.where(active: true)
   end
 
   haml :grid
@@ -195,14 +177,12 @@ post '/grid' do
 
   data = {
     :proposal_id => params[:proposal_id],
-    :room => params[:room],
+    :room_id => params[:room_id],
+    :room => "LEGACY FIELD - NO LONGER IN USE",
     :start_time => Time.parse(params[:timeslot]).strftime("%Y-%m-%d %H:%M:%S"),
     :scheduled_by => session[:user]
   }
-  if(params[:room] != '') then
-    # only save the record if it's complete
-    DB[:schedules].insert(data)
-  end
+  DB[:schedules].insert(data)
 
   redirect '/grid'
 end

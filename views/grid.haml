@@ -28,7 +28,7 @@
             %td{onClick: click_js}
               %div{id: timeslot}
               - @proposals.where(start_time: "#{day.strftime("%Y-%m-%d")} #{this_slot_starts.strftime("%H:%M:%S")}").each do |session|
-                %a.btn.btn-info{href: "/proposals/#{session[:id]}"}= "#{session[:title]} - #{session[:room]}"
+                %a.btn.btn-info{href: "/proposals/#{session[:id]}"}= "#{session[:title]} - #{session[:room_name]}"
       - this_slot_starts += settings.slot_length * 60
 
 - if is_logged_in?
@@ -47,7 +47,9 @@
               - @unscheduled_proposals.each do |proposal|
                 %option{value: proposal[:id]}= "#{proposal[:title]} - Proposed by #{proposal[:submitted_by]} - #{proposal[:count]} interested"
             %label.form-label{for: 'room'} Room:
-            %input.form-control.room{name: 'room', required: true}
+            %select.form-control.room{name: 'room_id'}
+              - @rooms.each do |room|
+                %option{value: room[:id]}= "#{room[:room_name]}"
           .modal-footer
             %button.btn.btn-secondary{type: :button, 'data-bs-dismiss' => 'modal'}
               Cancel
