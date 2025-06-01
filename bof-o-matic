@@ -122,36 +122,6 @@ post '/proposals/:id/interest' do
   redirect "/proposals/#{params[:id]}"
 end
 
-get '/scheduler' do
-  require_logged_in
-
-  @proposals = Proposal.association_left_join(:interest)
-    .association_left_join(:schedule)
-    .select(Sequel[:proposals][:id], :title, :description, :submitted_by, :name)
-    .where(start_time: nil)
-    .select_more{Sequel.as(count(:name), :count)}
-    .group(:title)
-
-  haml :scheduler
-end
-
-post '/scheduler' do
-  require_logged_in
-
-  data = {
-    :proposal_id => params[:proposal_id],
-    :room => params[:room],
-    :start_time => Time.parse(params[:slot]).strftime("%Y-%m-%d %H:%M:%S"),
-    :scheduled_by => session[:user]
-  }
-  if(params[:room] != '') then
-    # only save the record if it's complete
-    DB[:schedules].insert(data)
-  end
-
-  redirect '/scheduler'
-end
-
 get '/grid' do
   @proposals = Proposal.association_left_join(:interest)
     .association_join(schedule: :room)

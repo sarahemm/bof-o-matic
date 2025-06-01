@@ -22,8 +22,6 @@
                 %a.nav-link.dropdown-toggle{href: '#', role: :button, 'aria-expanded': false, 'data-bs-toggle': :dropdown } Scheduler Tools
                 %ul.dropdown-menu
                   %li
-                    %a.dropdown-item{href: '/scheduler'} Session Scheduler (deprecated, use grid!)
-                  %li
                     %a.dropdown-item{href: '/rooms'} Room Manager
                   %li
                     %a.dropdown-item{href: '/password'} Change Password
@@ -31,6 +29,5 @@
               -nav_link uri: '/logout', text: 'Log Out'
             - else
               -nav_link uri: '/login', text: 'Scheduler Login'
-            -nav_link uri: '#', text: "ROOM OVERHAUL IN PROGRESS - EXPECT BROKENNESS"
     %div.container-fluid
       = yield
