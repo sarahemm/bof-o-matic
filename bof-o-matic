@@ -75,7 +75,7 @@ end
 
 get '/proposals' do
   @proposals = Proposal.association_left_join(:interest)
-    .select(Sequel[:proposals][:id], :title, :description, :submitted_by, :name, :room, :room_id)
+    .select(Sequel[:proposals][:id], :title, :description, :submitted_by, :name, :room_id)
     .association_left_join(:schedule)
     .select_more{Sequel.as(count(:name), :count)}
     .group(:title)
@@ -148,7 +148,6 @@ post '/grid' do
   data = {
     :proposal_id => params[:proposal_id],
     :room_id => params[:room_id],
-    :room => "LEGACY FIELD - NO LONGER IN USE",
     :start_time => Time.parse(params[:timeslot]).strftime("%Y-%m-%d %H:%M:%S"),
     :scheduled_by => session[:user]
   }
