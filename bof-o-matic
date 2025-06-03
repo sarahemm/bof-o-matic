@@ -160,8 +160,7 @@ post '/grid' do
 end
 
 get '/proposals/:id/print' do
-  #require_logged_in
-  # TODO: should have a button on the proposal page for schedulers to call this from
+  require_logged_in
   generate_pdf params[:id]
 
   redirect "/proposals/#{params[:id]}"
