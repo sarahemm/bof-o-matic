@@ -8,6 +8,7 @@ require 'sinatra'
 require 'sequel'
 require 'bcrypt'
 require 'net/http'
+require './pdf_generator.rb'
 
 Sequel.default_timezone = :local
 DB = Sequel.connect("sqlite://#{Dir.pwd}/bof-o-matic.sqlite3")
@@ -153,7 +154,17 @@ post '/grid' do
   }
   DB[:schedules].insert(data)
 
+  generate_pdf params[:proposal_id]
+
   redirect '/grid'
+end
+
+get '/proposals/:id/print' do
+  #require_logged_in
+  # TODO: should have a button on the proposal page for schedulers to call this from
+  generate_pdf params[:id]
+
+  redirect "/proposals/#{params[:id]}"
 end
 
 get '/rooms' do
