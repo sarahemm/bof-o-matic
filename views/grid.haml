@@ -28,7 +28,7 @@
             %td{onClick: click_js, id: cellId}
               %div{id: timeslot}
               - @proposals.where(start_time: "#{day.strftime("%Y-%m-%d")} #{this_slot_starts.strftime("%H:%M:%S")}").each do |session|
-                %a.btn.btn-info{href: "/proposals/#{session[:id]}", 'data-location': session[:room_id]}= "#{session[:title]} - #{session[:room_name]}"
+                %a.btn.btn-info{href: "/proposals/#{session[:id]}", 'data-location': session[:room_id], onClick: 'event.stopPropagation();'}= "#{session[:title]} - #{session[:room_name]}"
             - cellId += 1
       - this_slot_starts += settings.slot_length * 60
 
