@@ -10,7 +10,11 @@ function markConflictingSchedulerRooms(cellId) {
   // at this time, we use this to later disable these
   conflictsFound = 0;
   $('#' + cellId).children('.btn').each(function() {
-    $('#room-' + $(this).attr('data-location')).attr('data-conflict', 'true');
+    control = $('#room-' + $(this).attr('data-location'))
+    control.attr('data-conflict', 'true');
+    // also mark them visually so they stand out better
+    control.addClass('text-danger');
+    control.html(control.html() + ' (room conflict)');
     conflictsFound++;
   });
 
@@ -34,6 +38,8 @@ function gridSchedulePopup(timeslot, cellId, modalTitle) {
   // remove any previous conflict marks from past calls
   $('#rooms').children('option').each(function(){
     $(this).removeAttr('data-conflict');
+    $(this).html($(this).html().replace(' (room conflict)', ''));
+    $(this).removeClass('text-danger');
   });
   
   // start with all rooms enabled
