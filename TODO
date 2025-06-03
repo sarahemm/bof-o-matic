@@ -1,5 +1,4 @@
 - Scheduler notes should be displayed somewhere, right now they're ignored
 - Timeout and return to main page after some time (for "kiosk" type use)
-- Write out a PDF when a session is scheduled
 - Notification subsystem
 - Un-scheduling a scheduled BoF
