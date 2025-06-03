@@ -6,6 +6,10 @@
     %link{rel: :stylesheet, href: "/assets/css/bof-o-matic.css"}
     %script{src: "/assets/js/bootstrap.bundle.min.js"}
     %script{src: "/assets/js/bof-o-matic.js"}
+    - if is_logged_in?
+      -# only need these for the scheduler's tasks
+      %script{src: "/assets/js/jquery.min.js"}
+      %script{src: "/assets/js/scheduler.js"}
   %body
     %nav.navbar.navbar-expand-sm{class: is_logged_in? ? 'bg-warning' : 'bg-body-secondary'}
       .container-fluid

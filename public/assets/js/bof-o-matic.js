@@ -78,16 +78,3 @@ function validateProposal() {
 
   return rv;
 }
-
-function gridSchedulePopup(timeslot, modalTitle) {
-  document.getElementById('scheduleTitle').innerHTML = "Schedule Session for " + modalTitle;
-  document.getElementById('timeslot').value = timeslot;
-  scheduleModal = new bootstrap.Modal('#scheduleModal');
-  scheduleModal.show();
-}
-
-function readyRenameRoom(name, id) {
-  document.getElementById('renameTitle').innerText = "Rename " + name;
-  document.getElementById('newName').value = name;
-  document.getElementById('roomId').value = id;
-}

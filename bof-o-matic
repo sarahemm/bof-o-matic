@@ -125,7 +125,7 @@ end
 get '/grid' do
   @proposals = Proposal.association_left_join(:interest)
     .association_join(schedule: :room)
-    .select(Sequel[:proposals][:id], :title, :description, :name, :start_time, :room_name)
+    .select(Sequel[:proposals][:id], :title, :description, :name, :start_time, :room_name, Sequel[:room][:id].as(:room_id))
     .select_more{Sequel.as(count(:name), :count)}
     .group(:title)
   

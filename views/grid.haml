@@ -1,7 +1,7 @@
 %h2= "#{Time.now.year} BoF Schedule"
 - if is_logged_in?
   %h3.text-info You are logged in as a scheduler, click any cell to schedule a session at that time.
-
+- cellId = 0
 %table.table.table-bordered
   %thead
     %tr
@@ -24,11 +24,12 @@
             - timeslot = "#{day.strftime('%Y-%m-%d')} #{this_slot_starts.strftime('%H:%M')}"
             - click_js = ""
             - if is_logged_in?
-              - click_js = "gridSchedulePopup('#{timeslot}', '#{day.strftime('%A')} at #{this_slot_starts.strftime('%H:%M')}');"
-            %td{onClick: click_js}
+              - click_js = "gridSchedulePopup('#{timeslot}', '#{cellId}', '#{day.strftime('%A')} at #{this_slot_starts.strftime('%H:%M')}');"
+            %td{onClick: click_js, id: cellId}
               %div{id: timeslot}
               - @proposals.where(start_time: "#{day.strftime("%Y-%m-%d")} #{this_slot_starts.strftime("%H:%M:%S")}").each do |session|
-                %a.btn.btn-info{href: "/proposals/#{session[:id]}"}= "#{session[:title]} - #{session[:room_name]}"
+                %a.btn.btn-info{href: "/proposals/#{session[:id]}", 'data-location': session[:room_id]}= "#{session[:title]} - #{session[:room_name]}"
+            - cellId += 1
       - this_slot_starts += settings.slot_length * 60
 
 - if is_logged_in?
@@ -47,9 +48,11 @@
               - @unscheduled_proposals.each do |proposal|
                 %option{value: proposal[:id]}= "#{proposal[:title]} - Proposed by #{proposal[:submitted_by]} - #{proposal[:count]} interested"
             %label.form-label{for: 'room'} Room:
-            %select.form-control.room{name: 'room_id'}
+            %select.mb-2.form-control.room#rooms{name: 'room_id'}
               - @rooms.each do |room|
-                %option{value: room[:id]}= "#{room[:room_name]}"
+                %option{value: room[:id], id: "room-#{room[:id]}"}= "#{room[:room_name]}"
+            %input.form-check-input#conflictOverride{type: :checkbox, onChange: 'conflictOverrideToggle();'}
+            %label.form-check-label#conflictOverrideLabel{for: 'conflictOverride'} Override Room Conflicts
           .modal-footer
             %button.btn.btn-secondary{type: :button, 'data-bs-dismiss' => 'modal'}
               Cancel

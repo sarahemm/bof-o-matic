@@ -3,6 +3,7 @@
 *.sqlite3
 add-test-data.sql
 *bootstrap*
+jquery.min.js
 /.config
 /coverage/
 /InstalledFiles
