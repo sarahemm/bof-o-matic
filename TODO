@@ -1,5 +1,3 @@
-- Schedule conflict prevention (don't let two sessions use the same room at the
-  same time without at least warning of it)
 - Timeout and return to main page after some time (for "kiosk" type use)
 - Write out a PDF when a session is scheduled
 - Notification subsystem
