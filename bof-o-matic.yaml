@@ -3,4 +3,4 @@ conference_name: "Example Conference"
 conference_starts: '2025-11-07 16:00'
 conference_ends: '2025-11-09 16:00'
 slot_length: 60
-
+generate_pdfs: true

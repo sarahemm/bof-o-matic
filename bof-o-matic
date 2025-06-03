@@ -19,6 +19,7 @@ configure do
   set :conference_start_time, Time.parse(CFG['conference_starts'])
   set :conference_end_time, Time.parse(CFG['conference_ends'])
   set :slot_length, CFG['slot_length']
+  set :generate_pdfs, CFG['generate_pdfs']
 end
 
 helpers do
@@ -154,14 +155,19 @@ post '/grid' do
   }
   DB[:schedules].insert(data)
 
-  generate_pdf params[:proposal_id]
+  if(settings.generate_pdfs) then
+    generate_pdf params[:proposal_id]
+  end
 
   redirect '/grid'
 end
 
 get '/proposals/:id/print' do
   require_logged_in
-  generate_pdf params[:id]
+
+  if(settings.generate_pdfs) then
+    generate_pdf params[:id]
+  end
 
   redirect "/proposals/#{params[:id]}"
 end
