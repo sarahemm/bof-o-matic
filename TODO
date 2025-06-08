@@ -1,4 +1,11 @@
+- Finish basic email notification subsystem
+
+- Email features to add:
+-- Email schedulers when a BoF hits a certain threshold of inteerst
+-- Reminder emails x minutes before a BoF
+-- Calendar link in BoF emails
+
 - Scheduler notes should be displayed somewhere, right now they're ignored
 - Timeout and return to main page after some time (for "kiosk" type use)
-- Notification subsystem
 - Un-scheduling a scheduled BoF
+

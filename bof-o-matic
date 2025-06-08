@@ -9,6 +9,7 @@ require 'sequel'
 require 'bcrypt'
 require 'net/http'
 require './pdf_generator.rb'
+require './email_builder.rb'
 
 Sequel.default_timezone = :local
 DB = Sequel.connect("sqlite://#{Dir.pwd}/bof-o-matic.sqlite3")
@@ -54,6 +55,9 @@ end
 
 class Room < Sequel::Model
   one_to_many :schedules
+end
+
+class Mail < Sequel::Model
 end
 
 enable :sessions
@@ -158,6 +162,8 @@ post '/grid' do
   if(settings.generate_pdfs) then
     generate_pdf params[:proposal_id]
   end
+
+  queue_emails_when_scheduled(params[:proposal_id])
 
   redirect '/grid'
 end
