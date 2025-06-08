@@ -62,6 +62,7 @@ end
 
 enable :sessions
 set :port, 4590
+set :method_override, true
 
 def require_logged_in
   redirect '/login' unless session[:user]
@@ -109,6 +110,15 @@ end
 get '/proposals/:id' do
   @proposal = Proposal[params[:id]]
   haml :proposal
+end
+
+# for un-scheduling a BoF
+delete '/schedules/:id' do
+  require_logged_in
+
+  Schedule[params[:id]].destroy
+
+  redirect "/"
 end
 
 get '/proposals/:id/interest' do

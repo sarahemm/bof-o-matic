@@ -19,3 +19,24 @@
       %a{href: "/proposals/#{@proposal[:id]}/interest"} Register Interest
   - if is_logged_in? and settings.generate_pdfs and not @proposal.schedule_dataset.empty?
     %a.btn.btn-primary{href: "/proposals/#{@proposal[:id]}/print"} Re-print Schedule Page
+  - if is_logged_in? and not @proposal.schedule_dataset.empty?
+    %button.btn.btn-danger{type: :button, 'data-bs-toggle' => 'modal', 'data-bs-target' => '#unscheduleModal'} Un-schedule Session
+
+- if is_logged_in? and not @proposal.schedule_dataset.empty?
+  .modal.fade#unscheduleModal{tabIndex: -1, role: :dialog}
+    .modal-dialog{role: :document}
+      .modal-content
+        %form{method: :post, action: "/schedules/#{schedule_entry[:id]}"}
+          .modal-header
+            %h5.modal-title#ScheduleModalLabel
+              %div Un-schedule Session
+            %button.btn-close{type: :button, 'data-bs-dismiss' => 'modal'}
+          .modal-body
+            %p Are you sure you want to un-schedule this session? It will be removed from the schedule, and all participants will receive a notification.
+            %input{type: :hidden, name: '_method', value: 'delete'}
+          .modal-footer
+            %button.btn.btn-secondary{type: :button, 'data-bs-dismiss' => 'modal'}
+              Cancel
+            %button.btn.btn-danger{type: :submit}
+              Un-schedule Session
+
