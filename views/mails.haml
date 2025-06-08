@@ -1,0 +1,33 @@
+:javascript
+  $(document).ready(function() {
+    const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
+    const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
+  });
+
+%h2= "BoF-O-Matic Mail Queue"
+%table.table.table-striped
+  %thead
+    %tr
+      %th{scope: 'col'} To
+      %th{scope: 'col'} Subject
+      %th{scope: 'col'} Queued At
+      %th{scope: 'col'} Status
+
+  - @mails.each do |mail|
+    %tr
+      %td= mail[:to_address]
+      %td
+        %a{href: "/mails/#{mail[:id]}"}= mail[:subject]
+      %td= mail[:queued_at]
+      %td
+        - tip = 'This message is in an unknown or invalid status. It will be ignored and the queue runner will not interact with it.'
+        -case mail[:status]
+          - when 'READY'
+            - tip = 'This message is in the queue waiting to be delivered to the MTA.'
+          - when 'RETRY'
+            - tip = 'Sending this message failed in a temporary way, so it will be re-tried in the near future.'
+          - when 'ERROR'
+            - tip = 'Sending this message failed in a permanent way, it will not be attempted again.'
+          - when 'SENT'
+            - tip = 'This mail has been successfully handed to the MTA, and no further action will be taken on it.'
+        %span{'data-bs-toggle': :tooltip, 'data-bs-title': tip}= mail[:status]

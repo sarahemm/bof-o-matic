@@ -1,0 +1,10 @@
+%h2 View Queued Message
+%div
+  %p= "Status: #{@mail[:status]}"
+  %p= "Queued at: #{@mail[:queued_at]}"
+  %p= "To: #{@mail[:to_address]}"
+  %p= "Subject: #{@mail[:subject]}"
+  %hr
+  %pre= @mail[:body]
+  %hr
+

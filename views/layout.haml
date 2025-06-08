@@ -28,6 +28,8 @@
                   %li
                     %a.dropdown-item{href: '/rooms'} Room Manager
                   %li
+                    %a.dropdown-item{href: '/mails'} Mail Queue
+                  %li
                     %a.dropdown-item{href: '/password'} Change Password
             - if is_logged_in?
               -nav_link uri: '/logout', text: 'Log Out'

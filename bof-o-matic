@@ -215,6 +215,21 @@ post '/rooms' do
   redirect '/rooms'
 end
 
+get '/mails' do
+  require_logged_in
+
+  @mails = Mail.all
+
+  haml :mails
+end
+
+get '/mails/:id' do
+  require_logged_in
+
+  @mail = Mail[params[:id]]
+  haml :mail
+end
+
 get '/login' do
   haml :login
 end
