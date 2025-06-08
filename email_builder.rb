@@ -7,16 +7,16 @@ def queue_emails_when_scheduled(proposal_id)
     .select(Sequel[:proposals][:id], :title, :description, :submitted_by, :submitter_email, :scheduled_by, :start_time, :room_name, Sequel[:room][:id].as(:room_id))
     .where(Sequel[:proposals][:id] => proposal_id).first
 
-  interest = Interest.where(proposal_id: proposal_id)
+  interests = Interest.where(proposal_id: proposal_id)
 
   subject = "Your BoF '#{proposal[:title]}' has been scheduled!"
   email_text = <<~EOF
     Your proposed BoF "#{proposal[:title]}" has been scheduled! This session will be taking place on #{proposal[:start_time].strftime("%A at %H:%M")} in #{proposal[:room_name]}.
     
     The following attendees have expressed interest in this session:
-     - #{interest.map(:name).join("\n - ")}
+     - #{interests.map(:name).join("\n - ")}
     
-    If you have any questions or need something changed please reach out #{proposal[:scheduled_by]}, who is the scheduler who processed this session.
+    If you have any questions or need something changed please reach out to #{proposal[:scheduled_by]}, the scheduler who processed this session.
     
     Thanks!
      - BoF Team
@@ -29,7 +29,26 @@ def queue_emails_when_scheduled(proposal_id)
   )
   mail.save
 
-  # TODO: queue mails to each interested party, too
+  # queue up mail for each interested person, too
+  interests.each do |interest|
+    next unless interest[:email] and interest[:email] != ''
+    subject = "BoF '#{proposal[:title]}' has been scheduled!"
+    email_text = <<~EOF
+      A BoF you expressed interest in, "#{proposal[:title]}", has been scheduled! This session will be taking place on #{proposal[:start_time].strftime("%A at %H:%M")} in #{proposal[:room_name]}.
+      
+      If you have any questions please reach out to the one who submitted this session proposal, #{proposal[:submitted_by]}.
+      
+      Thanks!
+      - BoF Team
+    EOF
+
+    mail = Mail.new(
+      to_address: interest[:email],
+      subject: subject,
+      body: email_text
+    )
+    mail.save
+  end
 end
 
 
