@@ -3,6 +3,7 @@
 require 'sequel'
 require 'yaml'
 require 'net/smtp'
+require 'logger'
 
 db = Sequel.connect("sqlite://#{Dir.pwd}/bof-o-matic.sqlite3")
 cfg = YAML.load(File.read("bof-o-matic.yaml"))
@@ -10,29 +11,26 @@ cfg = YAML.load(File.read("bof-o-matic.yaml"))
 class Mail < Sequel::Model
 end
 
-def log(level, msg, id=nil)
-  if(id) then
-    puts "#{level.to_s.upcase}: [#{id}] #{msg}"
-  else
-    puts "#{level.to_s.upcase}: #{msg}"
-  end
-end
+logger = Logger.new(STDOUT, progname: 'bom-maild')
+logger.level = Logger::DEBUG
 
 while true do
+  logger.debug "Starting mail run"
   if(cfg['email_hold']) then
     # if we want to hold emails in the queue for testing or because of a system
     # issue, just keep waiting until that flag is removed
-    log :warn, "Email queue is on hold in configuration file, waiting..."
+    logger.warn "Email queue is on hold in configuration file, waiting..."
     while(cfg['email_hold']) do
       sleep 60
       cfg = YAML.load(File.read("bof-o-matic.yaml"))
     end
+    logger.warn "Email queue hold has been released, proceeding"
   end
 
   Mail.where(status: ['READY', 'RETRY']).each do |message|
     if(cfg['email_to_domain_filter']) then
       unless(cfg['email_to_domain_filter'].include? message[:to_address].split('@')[1]) then
-        log :warn, "Skipping email to #{message[:to_address]} as it does not match the defined domain filter (#{cfg['email_to_domain_filter']})", message[:id]
+        logger.warn "Skipping sending message #{message[:id]} to #{message[:to_address]} as it does not match the defined domain filter (#{cfg['email_to_domain_filter']})"
         next
       end
     end
@@ -49,26 +47,29 @@ while true do
       smtp.start('bof-o-matic')
       smtp.send_message(email_body, cfg['email_from'], message[:to_address]);
     rescue Net::SMTPFatalError => e
-      log :warn, "Fatal error sending mail: #{e.replace("\n", " ")}, marking as ERROR", message[:id]
+      logger.warn "Fatal error sending message #{message[:id]}: #{e.replace("\n", " ")}, marking as ERROR"
       message.status = 'ERROR'
       message.save
       smtp.finish
     rescue StandardError => e
-      log :warn, "Temporary error sending mail: #{e}, marking as RETRY", message[:id]
+      logger.warn "Temporary error sending message #{message[:id]}: #{e}, marking as RETRY"
       message.status = 'RETRY'
       message.save
     else
-      log :info, "Successfully sent message to #{message[:to_address]}", message[:id]
+      logger.info "Successfully sent message #{message[:id]} to #{message[:to_address]}"
       if(cfg['keep_sent_mail']) then
         # Commented this out for testing only!
+        logger.debug "Marking message #{message[:id]} as sent"
         message.status = 'SENT'
         message.save
       else
+        logger.debug "Deleting message #{message[:id]} from the queue"
         message.destroy
       end
       smtp.finish
     end
   end
 
+  logger.debug "Finished mail run, going to sleep"
   sleep 60
 end
