@@ -7,6 +7,10 @@ slot_length: 60
 
 generate_pdfs: true
 
+email_hold: false
+email_to_domain_filter:
+  - 'sen.cx'
+keep_sent_mail: true
 smtp_server: 'localhost'
 smtp_port: 25
 email_from: 'Example Conference BoFs <bofomatic@sen.cx>'
