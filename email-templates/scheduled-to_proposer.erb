@@ -1,0 +1,10 @@
+Your proposed BoF "<%= proposal[:title] %>" has been scheduled! This session will be taking place on <%= proposal[:start_time].strftime("%A at %H:%M") %> in <%= proposal[:room_name] %>.
+
+The following attendees have expressed interest in this session:
+ - <%= interested.join("\n - ") %>
+
+If you have any questions or need something changed please reach out to <%= proposal[:scheduled_by] %>, the scheduler who processed this session.
+
+Thanks!
+ - BoF Team
+

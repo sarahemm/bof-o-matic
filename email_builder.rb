@@ -1,6 +1,5 @@
-require 'prawn'
+require 'erb'
 
-# gienerate a PDF in the spool directory for a given proposal
 def queue_emails_when_scheduled(proposal_id)
   proposal = Proposal
     .association_join(schedule: :room)
@@ -8,44 +7,28 @@ def queue_emails_when_scheduled(proposal_id)
     .where(Sequel[:proposals][:id] => proposal_id).first
 
   interests = Interest.where(proposal_id: proposal_id)
+  interested = interests.map(:name)
 
   subject = "Your BoF '#{proposal[:title]}' has been scheduled!"
-  email_text = <<~EOF
-    Your proposed BoF "#{proposal[:title]}" has been scheduled! This session will be taking place on #{proposal[:start_time].strftime("%A at %H:%M")} in #{proposal[:room_name]}.
-    
-    The following attendees have expressed interest in this session:
-     - #{interests.map(:name).join("\n - ")}
-    
-    If you have any questions or need something changed please reach out to #{proposal[:scheduled_by]}, the scheduler who processed this session.
-    
-    Thanks!
-     - BoF Team
-  EOF
+  proposer_tmpl = ERB.new(File.read('email-templates/scheduled-to_proposer.erb'))
   
   mail = Mail.new(
     to_address: proposal[:submitter_email],
     subject: subject,
-    body: email_text
+    body: proposer_tmpl.result(binding)
   )
   mail.save
 
   # queue up mail for each interested person, too
+  interest_tmpl = ERB.new(File.read('email-templates/scheduled-to_interests.erb'))
   interests.each do |interest|
     next unless interest[:email] and interest[:email] != ''
     subject = "BoF '#{proposal[:title]}' has been scheduled!"
-    email_text = <<~EOF
-      A BoF you expressed interest in, "#{proposal[:title]}", has been scheduled! This session will be taking place on #{proposal[:start_time].strftime("%A at %H:%M")} in #{proposal[:room_name]}.
-      
-      If you have any questions please reach out to the one who submitted this session proposal, #{proposal[:submitted_by]}.
-      
-      Thanks!
-      - BoF Team
-    EOF
 
     mail = Mail.new(
       to_address: interest[:email],
       subject: subject,
-      body: email_text
+      body: interest_tmpl.result(binding)
     )
     mail.save
   end
