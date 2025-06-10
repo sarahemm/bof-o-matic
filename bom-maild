@@ -4,6 +4,29 @@ require 'sequel'
 require 'yaml'
 require 'net/smtp'
 require 'logger'
+require 'optparse'
+
+logger = Logger.new(STDOUT, progname: 'bom-maild')
+logger.level = Logger::WARN
+
+foreground = false
+opt_parser = OptionParser.new do |opts|
+  opts.banner = "Usage: #{$0} [options]"
+
+  opts.on("-h", "--help", "Prints this help") do
+    puts opts
+    exit
+  end
+
+  opts.on("-f", "--foreground", "Don't daemonize, stay in foreground and send logs to stdout") do
+    foreground = true
+  end
+
+  opts.on("-l", "--log-level=LEVEL", "Log level (debug, info, warn, or error)") do |level|
+    logger.level = level
+  end
+end
+opt_parser.parse!
 
 db = Sequel.connect("sqlite://#{Dir.pwd}/bof-o-matic.sqlite3")
 cfg = YAML.load(File.read("bof-o-matic.yaml"))
@@ -11,8 +34,10 @@ cfg = YAML.load(File.read("bof-o-matic.yaml"))
 class Mail < Sequel::Model
 end
 
-logger = Logger.new(STDOUT, progname: 'bom-maild')
-logger.level = Logger::DEBUG
+if(!foreground) then
+  logger.reopen("bom-maild.log") # TODO: this should be configurable
+  Process.daemon
+end
 
 while true do
   logger.debug "Starting mail run"
@@ -30,7 +55,7 @@ while true do
   Mail.where(status: ['READY', 'RETRY']).each do |message|
     if(cfg['email_to_domain_filter']) then
       unless(cfg['email_to_domain_filter'].include? message[:to_address].split('@')[1]) then
-        logger.warn "Skipping sending message #{message[:id]} to #{message[:to_address]} as it does not match the defined domain filter (#{cfg['email_to_domain_filter']})"
+        logger.info "Skipping sending message #{message[:id]} to #{message[:to_address]} as it does not match the defined domain filter (#{cfg['email_to_domain_filter']})"
         next
       end
     end
