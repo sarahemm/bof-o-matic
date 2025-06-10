@@ -118,6 +118,8 @@ delete '/schedules/:id' do
 
   Schedule[params[:id]].destroy
 
+  queue_emails_when_unscheduled params[:proposal_id], session[:user]
+
   redirect "/"
 end
 

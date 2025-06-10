@@ -34,6 +34,7 @@
           .modal-body
             %p Are you sure you want to un-schedule this session? It will be removed from the schedule, and all participants will receive a notification.
             %input{type: :hidden, name: '_method', value: 'delete'}
+            %input{type: :hidden, name: 'proposal_id', value: @proposal[:id]}
           .modal-footer
             %button.btn.btn-secondary{type: :button, 'data-bs-dismiss' => 'modal'}
               Cancel
