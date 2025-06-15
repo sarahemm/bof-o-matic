@@ -1,0 +1,63 @@
+#!/usr/bin/ruby
+
+require 'sequel'
+require 'yaml'
+require 'logger'
+require 'optparse'
+require './email_builder.rb'
+
+logger = Logger.new(STDOUT, progname: 'bom-reminderd')
+logger.level = Logger::WARN
+
+foreground = false
+opt_parser = OptionParser.new do |opts|
+  opts.banner = "Usage: #{$0} [options]"
+
+  opts.on("-h", "--help", "Prints this help") do
+    puts opts
+    exit
+  end
+
+  opts.on("-f", "--foreground", "Don't daemonize, stay in foreground and send logs to stdout") do
+    foreground = true
+  end
+
+  opts.on("-l", "--log-level=LEVEL", "Log level (debug, info, warn, or error)") do |level|
+    logger.level = level
+  end
+end
+opt_parser.parse!
+
+db = Sequel.connect("sqlite://#{Dir.pwd}/bof-o-matic.sqlite3")
+cfg = YAML.load(File.read("bof-o-matic.yaml"))
+
+require './bom_models.rb'
+
+if(!cfg['reminder_mins_before'] or cfg['reminder_mins_before'] < 0) then
+  logger.error "Reminder are disabled in configuration, exiting."
+  Kernel.exit 1
+end
+
+if(!foreground) then
+  logger.reopen("bom-reminderd.log") # TODO: this should be configurable
+  Process.daemon
+end
+
+while true do
+  logger.debug "Starting reminder run"
+
+  Proposal.association_join(:schedule).where(reminders_sent: false).each do |proposal|
+    if(proposal[:start_time] - Time.now <= cfg['reminder_mins_before']*60) then
+      logger.info "Sending reminders for #{proposal[:title]}"
+      queue_reminder_emails proposal[:proposal_id], cfg['reminder_mins_before']
+      this_schedule = Schedule[proposal[:id]]
+      this_schedule[:reminders_sent] = true
+      this_schedule.save
+    else
+      logger.debug "Not sending reminders for #{proposal[:title]} as it is still #{(proposal[:start_time] - Time.now) / 60} minutes away"
+    end
+  end
+  
+  logger.debug "Finished reminder run, going to sleep"
+  sleep 60
+end

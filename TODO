@@ -1,7 +1,12 @@
 - Email features to add:
--- Reminder emails x minutes before a BoF
 -- Calendar link in BoF emails
 
 - Scheduler notes should be displayed somewhere, right now they're ignored
 - Timeout and return to main page after some time (for "kiosk" type use)
 
+BUGS
+- Scheduled sessions with no interest don't show on the grid (unlikely to
+  happen, but still a bug)
+
+"nice to haves"
+- Scheduler user management screen (instead of having to use sqlite3 CLI)

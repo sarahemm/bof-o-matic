@@ -82,3 +82,37 @@ def queue_interest_emails(proposal_id)
     mail.save
   end
 end
+
+def queue_reminder_emails(proposal_id, reminder_minutes)
+  proposal = Proposal
+    .association_join(schedule: :room)
+    .select(Sequel[:proposals][:id], :title, :description, :submitted_by, :submitter_email, :scheduled_by, :start_time, :room_name, Sequel[:room][:id].as(:room_id))
+    .where(Sequel[:proposals][:id] => proposal_id).first
+
+  interests = Interest.where(proposal_id: proposal_id)
+  interested = interests.map(:name)
+
+  subject = "Your BoF '#{proposal[:title]}' is starting soon!"
+  proposer_tmpl = ERB.new(File.read('email-templates/reminder-to_proposer.erb'))
+
+  mail = Mail.new(
+    to_address: proposal[:submitter_email],
+    subject: subject,
+    body: proposer_tmpl.result(binding)
+  )
+  mail.save
+
+  # queue up mail for each interested person, too
+  interest_tmpl = ERB.new(File.read('email-templates/reminder-to_interests.erb'))
+  interests.each do |interest|
+    next unless interest[:email] and interest[:email] != ''
+    subject = "BoF '#{proposal[:title]}' is starting soon!"
+
+    mail = Mail.new(
+      to_address: interest[:email],
+      subject: subject,
+      body: interest_tmpl.result(binding)
+    )
+    mail.save
+  end
+end

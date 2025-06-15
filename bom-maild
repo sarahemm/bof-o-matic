@@ -31,8 +31,7 @@ opt_parser.parse!
 db = Sequel.connect("sqlite://#{Dir.pwd}/bof-o-matic.sqlite3")
 cfg = YAML.load(File.read("bof-o-matic.yaml"))
 
-class Mail < Sequel::Model
-end
+require './bom_models.rb'
 
 if(!foreground) then
   logger.reopen("bom-maild.log") # TODO: this should be configurable
