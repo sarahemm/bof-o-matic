@@ -21,6 +21,7 @@ configure do
   set :conference_end_time, Time.parse(CFG['conference_ends'])
   set :slot_length, CFG['slot_length']
   set :generate_pdfs, CFG['generate_pdfs']
+  set :interest_threshold, CFG['interest_threshold']
 end
 
 helpers do
@@ -136,6 +137,10 @@ post '/proposals/:id/interest' do
   }
   data[:submitted_at] = Time.now
   DB[:interests].insert(data)
+
+  if(Interest.where(proposal_id: params[:id]).count == settings.interest_threshold) then
+    queue_interest_emails(params[:id])
+  end
 
   redirect "/proposals/#{params[:id]}"
 end

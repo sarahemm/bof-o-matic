@@ -64,3 +64,21 @@ def queue_emails_when_unscheduled(proposal_id, unscheduled_by)
     mail.save
   end
 end
+
+def queue_interest_emails(proposal_id)
+  proposal = Proposal[proposal_id]
+  interests = Interest.where(proposal_id: proposal_id)
+  interested = interests.map(:name)
+
+  subject = "The BoF '#{proposal[:title]}' has reached enough interest to be scheduled"
+  tmpl = ERB.new(File.read('email-templates/interest-to_schedulers.erb'))
+
+  Scheduler.exclude(email: nil).each do |scheduler|
+    mail = Mail.new(
+      to_address: scheduler.email,
+      subject: subject,
+      body: tmpl.result(binding)
+    )
+    mail.save
+  end
+end
