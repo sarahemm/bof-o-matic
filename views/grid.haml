@@ -27,7 +27,8 @@
               - click_js = "gridSchedulePopup('#{timeslot}', '#{cellId}', '#{day.strftime('%A')} at #{this_slot_starts.strftime('%H:%M')}');"
             %td{onClick: click_js, id: cellId}
               %div{id: timeslot}
-              - @proposals.where(start_time: "#{day.strftime("%Y-%m-%d")} #{this_slot_starts.strftime("%H:%M:%S")}").each do |session|
+              - # TODO: fix the .000000 as part of the timezone support work later
+              - @proposals.where(start_time: "#{day.strftime("%Y-%m-%d")} #{this_slot_starts.strftime("%H:%M:%S")}.000000").each do |session|
                 %a.btn.btn-info{href: "/proposals/#{session[:id]}", 'data-location': session[:room_id], onClick: 'event.stopPropagation();'}= "#{session[:title]} - #{session[:room_name]}"
             - cellId += 1
       - this_slot_starts += settings.slot_length * 60
