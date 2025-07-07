@@ -132,7 +132,7 @@ get '/grid' do
   if is_logged_in? then
     @unscheduled_proposals = Proposal.association_left_join(:interest)
       .association_left_join(:schedule)
-      .select(Sequel[:proposals][:id], :title, :description, :submitted_by, :name)
+      .select(Sequel[:proposals][:id], :title, :description, :submitted_by, :name, :scheduler_notes)
       .where(start_time: nil)
       .select_more{Sequel.as(count(:name), :count)}
       .group(:title)

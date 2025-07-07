@@ -45,9 +45,10 @@
           .modal-body
             %input#timeslot{type: :hidden, name: 'timeslot'}
             %label.form-label{for: 'session'} Session:
-            %select.form-control.session{name: 'proposal_id'}
+            %select#unscheduledproposals.form-control.session{name: 'proposal_id', onChange: 'displaySchedulerNotes();'}
               - @unscheduled_proposals.each do |proposal|
-                %option{value: proposal[:id]}= "#{proposal[:title]} - Proposed by #{proposal[:submitted_by]} - #{proposal[:count]} interested"
+                %option{value: proposal[:id], 'data-notes': proposal[:scheduler_notes]}= "#{proposal[:title]} - Proposed by #{proposal[:submitted_by]} - #{proposal[:count]} interested"
+            %p#schedulernotes{style: 'font-weight: bold'}
             %label.form-label{for: 'room'} Room:
             %select.mb-2.form-control.room#rooms{name: 'room_id'}
               - @rooms.each do |room|
@@ -60,3 +61,7 @@
             %button.btn.btn-primary{type: :submit}
               Schedule Session
 
+  :javascript
+    $(document).ready(function() {
+      displaySchedulerNotes();
+    });

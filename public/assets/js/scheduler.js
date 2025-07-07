@@ -76,3 +76,12 @@ function readyRenameRoom(name, id) {
   document.getElementById('newName').value = name;
   document.getElementById('roomId').value = id;
 }
+
+function displaySchedulerNotes() {
+  var notes = $('option:selected', '#unscheduledproposals').attr('data-notes');
+  if(notes === undefined || notes == '') {
+    $('#schedulernotes').text('');
+    return;
+  }
+  $('#schedulernotes').text('Notes from proposer: ' + notes);
+}
