@@ -22,6 +22,7 @@ configure do
   set :slot_length, CFG['slot_length']
   set :generate_pdfs, CFG['generate_pdfs']
   set :interest_threshold, CFG['interest_threshold']
+  set :kiosk_timeout, CFG['kiosk_timeout']
 end
 
 helpers do
@@ -39,6 +40,7 @@ end
 require './bom_models.rb'
 
 enable :sessions
+set :session_secret, CFG['session_secret']
 set :port, 4590
 set :method_override, true
 
@@ -48,6 +50,14 @@ end
 
 def is_logged_in?
   session[:user]
+end
+
+def kiosk_mode?
+  session[:kiosk_mode]
+end
+
+def kiosk_mode_url
+  session[:kiosk_mode_url]
 end
 
 not_found do
@@ -212,6 +222,31 @@ get '/mails/:id' do
 
   @mail = Mail[params[:id]]
   haml :mail
+end
+
+get '/kiosk' do
+  require_logged_in
+
+  @kiosk_mode = session[:kiosk_mode]
+  @kiosk_url = session[:kiosk_mode_url]
+
+  haml :kiosk
+end
+
+post '/kiosk' do
+  require_logged_in
+
+  session[:kiosk_mode] = params['kiosk'] == 'on'
+  session[:kiosk_mode_url] = params['url']
+
+  redirect '/kiosk'
+end
+
+get '/kiosk_timeout' do
+  # log any logged-in user out and redirect to where we've been asked to go
+  session.delete :user
+
+  redirect session['kiosk_mode_url']
 end
 
 get '/login' do

@@ -17,3 +17,7 @@ keep_sent_mail: true
 smtp_server: 'localhost'
 smtp_port: 25
 email_from: 'Example Conference BoFs <bofomatic@sen.cx>'
+
+kiosk_timeout: 300
+
+session_secret: '4c89421c3114b8fd14e5946d64ab5dc8d82f2f311e5f7327f5e0f65bf4e8c418a656e47eb25d0cae22ae2344e1bb70327d19fcd0a84c927083bbcc9480fd661f'

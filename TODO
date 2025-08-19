@@ -1,7 +1,10 @@
 - Email features to add:
 -- Calendar link in BoF emails
 
-- Timeout and return to main page after some time (for "kiosk" type use)
+- Kiosk mode timeout currently gets ignored if the current page is the one we redirect to, but the logic when on the redirect destination page should actually be:
+--- Enable the timeout if the page becomes "dirty" in any way
+--- Reset the timeout whenever the user types or mouses
+
 - Implement proper timezone support (there's probably stuff that assumes it's
   in +0000 since that's where the current server is)
 

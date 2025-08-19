@@ -1,0 +1,22 @@
+%h2 Kiosk Mode
+Kiosk Mode is intended for kiosks, and after a timeout period will log out any logged-in scheduler, and force a return to the specified page. This is a per-device setting.
+%br
+%br
+- if @kiosk_mode then
+  = "Kiosk mode is currently ON for this device, redirecting to #{@kiosk_url}"
+  %form{method: 'post'}
+    %input{name: 'kiosk', type: 'hidden', value: 'off'}
+    %button.btn.btn-primary.mb-3{type: 'submit'} Turn OFF Kiosk Mode for this device
+- else
+  Kiosk mode is currently OFF for this device
+  %form{method: 'post'}
+    %input{name: 'kiosk', type: 'hidden', value: 'on'}
+    %div.mb-3
+      %label.form-label{for: 'url'} Page to redirect to:
+      %select#url{name: 'url'}
+        %option{value: '/proposals/new'} New Proposal Entry
+        %option{value: '/grid'} Schedule Grid
+        %option{value: '/proposals'} List of Proposals
+    %div.mb-3
+      %button.btn.btn-primary.mb-3{type: 'submit'} Turn ON Kiosk Mode for this device
+
