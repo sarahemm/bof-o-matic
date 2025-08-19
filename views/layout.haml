@@ -12,9 +12,26 @@
       %script{src: "/assets/js/scheduler.js"}
   %body
     - if kiosk_mode? and request.path_info != kiosk_mode_url
+      -# Kiosk mode, and we're on a different page than the one we timeout to
       :javascript
         $(document).ready(function() {
           setTimeout(function() {
+            console.log("Kiosk timeout!");
+            window.location.href =("/kiosk_timeout");
+          }, #{settings.kiosk_timeout*1000});
+        });
+    - if kiosk_mode? and request.path_info == kiosk_mode_url
+      -# Kiosk mode, and we're on the page we timeout to,
+      -# so only start the timer once the page is "dirty"
+      :javascript
+        var kioskTimer;
+        document.addEventListener('keypress', function(event) {
+          if(kioskTimer !== undefined) {
+            clearTimeout(kioskTimer);
+          } else {
+            console.log("Page is now dirty");
+          }
+          kioskTimer = setTimeout(function() {
             console.log("Kiosk timeout!");
             window.location.href =("/kiosk_timeout");
           }, #{settings.kiosk_timeout*1000});

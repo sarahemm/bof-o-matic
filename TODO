@@ -1,9 +1,8 @@
 - Email features to add:
 -- Calendar link in BoF emails
 
-- Kiosk mode timeout currently gets ignored if the current page is the one we redirect to, but the logic when on the redirect destination page should actually be:
---- Enable the timeout if the page becomes "dirty" in any way
---- Reset the timeout whenever the user types or mouses
+- Display a countdown for the kiosk mode timer, as right now it's non-obvious
+  that you're about to be kicked out
 
 - Implement proper timezone support (there's probably stuff that assumes it's
   in +0000 since that's where the current server is)
