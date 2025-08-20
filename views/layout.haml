@@ -10,32 +10,24 @@
       -# only need these for the scheduler's tasks
       %script{src: "/assets/js/jquery.min.js"}
       %script{src: "/assets/js/scheduler.js"}
+    - if kiosk_mode?
+      %script{src: "/assets/js/kiosk.js"}
   %body
-    - if kiosk_mode? and request.path_info != kiosk_mode_url
-      -# Kiosk mode, and we're on a different page than the one we timeout to
+    - if kiosk_mode?
       :javascript
-        $(document).ready(function() {
-          setTimeout(function() {
-            console.log("Kiosk timeout!");
-            window.location.href =("/kiosk_timeout");
-          }, #{settings.kiosk_timeout*1000});
-        });
-    - if kiosk_mode? and request.path_info == kiosk_mode_url
-      -# Kiosk mode, and we're on the page we timeout to,
-      -# so only start the timer once the page is "dirty"
-      :javascript
-        var kioskTimer;
-        document.addEventListener('keypress', function(event) {
-          if(kioskTimer !== undefined) {
-            clearTimeout(kioskTimer);
-          } else {
-            console.log("Page is now dirty");
-          }
-          kioskTimer = setTimeout(function() {
-            console.log("Kiosk timeout!");
-            window.location.href =("/kiosk_timeout");
-          }, #{settings.kiosk_timeout*1000});
-        });
+        kioskTimerInit(#{settings.kiosk_timeout});
+      - if request.path_info != kiosk_mode_url
+        :javascript
+          document.addEventListener('DOMContentLoaded', function() {
+            kioskTimerStart();
+          });
+      - else
+        -# Kiosk mode and we're on the page we timeout to,
+        -# so only start the timer once the page is "dirty"
+        :javascript
+          document.addEventListener('keypress', function(event) {
+            kioskTimerReset();
+          });
     %nav.navbar.navbar-expand-sm{class: is_logged_in? ? 'bg-warning' : 'bg-body-secondary'}
       .container-fluid
         %a.navbar-brand{href: '/'} BoF-O-Matic
@@ -62,5 +54,7 @@
               -nav_link uri: '/logout', text: 'Log Out'
             - else
               -nav_link uri: '/login', text: 'Scheduler Login'
+          %ul.d-flex
+            %span#timer
     %div.container-fluid
       = yield
