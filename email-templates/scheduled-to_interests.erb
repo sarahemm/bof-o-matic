@@ -1,5 +1,9 @@
 A BoF you expressed interest in, "<%= proposal[:title] %>", has been scheduled! This session will be taking place on <%= proposal[:start_time].strftime("%A at %H:%M") %> in <%= proposal[:room_name] %>.
 
+To add this to your calendar, use these links:
+- Google Calendar: <%= calendar_links.google_url %>
+- Office 365 Calendar: <%= calendar_links.office365_url %>
+
 If you have any questions please reach out to the one who submitted this session proposal, <%= proposal[:submitted_by] %>.
 
 Thanks!

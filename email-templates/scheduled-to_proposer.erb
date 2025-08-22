@@ -3,6 +3,10 @@ Your proposed BoF "<%= proposal[:title] %>" has been scheduled! This session wil
 The following attendees have expressed interest in this session:
  - <%= interested.join("\n - ") %>
 
+To add this to your calendar, use these links:
+- Google Calendar: <%= calendar_links.google_url %>
+- Office 365 Calendar: <%= calendar_links.office365_url %>
+
 If you have any questions or need something changed please reach out to <%= proposal[:scheduled_by] %>, the scheduler who processed this session.
 
 Thanks!

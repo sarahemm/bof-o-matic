@@ -59,10 +59,15 @@ while true do
       end
     end
 
+    extra_headers = ""
+    if(message[:body].include? 'Content-Disposition:')
+      # it's a MIME multipart email, add the right header for that
+      extra_headers = "\nContent-Type: multipart/alternative; boundary=\"boundary-string\""
+    end
     email_body = <<~EOF
       From: #{cfg['email_from']}
       To: #{message[:to_address]}
-      Subject: #{message[:subject]}
+      Subject: #{message[:subject]}#{extra_headers}
       
       #{message[:body]}
     EOF
