@@ -2,9 +2,6 @@
 
 
 BUGS
-- Scheduled sessions with no interest don't show on the grid (unlikely to
-  happen, but still a bug)
-
 - PDF generation fails if non-ASCII characters are involved, due to needing
   external fonts.
 
