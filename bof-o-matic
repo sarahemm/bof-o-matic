@@ -8,14 +8,17 @@ require 'sinatra'
 require 'sequel'
 require 'bcrypt'
 require 'net/http'
-require './pdf_generator.rb'
 require './email_builder.rb'
 
 Sequel.default_timezone = :local
 DB = Sequel.connect("sqlite://#{Dir.pwd}/bof-o-matic.sqlite3")
 CFG = YAML.load(File.read("bof-o-matic.yaml"))
 
+require './pdf_generator.rb' if CFG['generate_pdfs']
+
 configure do
+  set :host_authorization, { permitted_hosts: [] }
+
   set :conference_name, CFG['conference_name']
   set :conference_start_time, Time.parse(CFG['conference_starts'])
   set :conference_end_time, Time.parse(CFG['conference_ends'])
