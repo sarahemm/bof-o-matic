@@ -8,7 +8,7 @@
     %p
       %b= "Scheduled! BoF will take place on #{start_time.strftime('%A')} at #{start_time.strftime('%H:%M')} in #{schedule_entry.room_dataset.first[:room_name]}"
     - if is_logged_in?
-      %p= "Scheduled by #{schedule_entry[:scheduled_by]} on #{schedule_entry[:scheduled_at].strftime("%Y-%m-%d at %H:%M")}"
+      %p= "Scheduled by #{schedule_entry[:scheduled_by]} on #{schedule_entry[:scheduled_at].strftime("%Y-%m-%d at %H:%M %Z")}"
   %p Interest from:
   %ul
     - if(@proposal.interest_dataset.empty?) then

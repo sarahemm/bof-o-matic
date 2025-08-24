@@ -1,6 +1,3 @@
-- Implement proper timezone support (there's probably stuff that assumes it's
-  in +0000 since that's where the current server is)
-
 - Grid view that has all times on the X axis and rooms on the Y
 
 
