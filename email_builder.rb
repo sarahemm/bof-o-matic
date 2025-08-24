@@ -11,9 +11,10 @@ def queue_emails_when_scheduled(proposal_id)
   interested = interests.map(:name)
 
   subject = "Your BoF '#{proposal[:title]}' has been scheduled!"
-  # TODO: maybe due for a refactor
+  
   proposer_tmpl = ERB.new(File.read('email-templates/scheduled-to_proposer.erb'))
   proposer_html_tmpl = ERB.new(File.read('email-templates/scheduled-to_proposer.html.erb'))
+  
   calendar_links = AddToCalendar::URLs.new(
     # TODO: add end time too
     start_datetime: proposal[:start_time],
@@ -23,11 +24,17 @@ def queue_emails_when_scheduled(proposal_id)
     timezone: 'America/Los_Angeles'
   )
   
+  # add_to_calendar can only generate a data link, not raw ics, so we unescape it
+  # and reformat it a bit to get a file-formatted one. kind of a dirty hack but
+  # it avoids needing yet another dependency just for this one thing.
+  ics_file = CGI.unescape(calendar_links.ical_url.split(',', 2)[1])
+
   # add the HTML part, reformat links, etc.
-  body = format_multipart(
-    plain: proposer_tmpl.result(binding),
-    html: proposer_html_tmpl.result(binding)
-  )
+  body = format_multipart([
+    {type: 'text/plain', body: proposer_tmpl.result(binding)},
+    {type: 'text/html', body: proposer_html_tmpl.result(binding)},
+    {type: 'text/calendar', filename: "bof-#{proposal_id}.ics", body: ics_file}
+  ])
   
   mail = Mail.new(
     to_address: proposal[:submitter_email],
@@ -41,10 +48,11 @@ def queue_emails_when_scheduled(proposal_id)
   interest_html_tmpl = ERB.new(File.read('email-templates/scheduled-to_interests.html.erb'))
   
   # add the HTML part, reformat links, etc.
-  body = format_multipart(
-    plain: interest_tmpl.result(binding),
-    html: interest_html_tmpl.result(binding)
-  )
+  body = format_multipart([
+    {type: 'text/plain', body: interest_tmpl.result(binding)},
+    {type: 'text/html', body: interest_html_tmpl.result(binding)},
+    {type: 'text/calendar', filename: "bof-#{proposal_id}.ics", body: ics_file}
+  ])
 
   interests.each do |interest|
     next unless interest[:email] and interest[:email] != ''
@@ -142,24 +150,25 @@ def queue_reminder_emails(proposal_id, reminder_minutes)
   end
 end
 
-def format_multipart(plain:, html:)
-  mp_body = <<~EOF
-    --boundary-string
-    Content-Type: text/plain; charset="utf-8"
-    Content-Transfer-Encoding: 7BIT
-    Content-Disposition: inline
-    
-    #{plain}
-    
-    --boundary-string
-    Content-Type: text/html; charset="utf-8"
-    Content-Transfer-Encoding: 7BIT
-    Content-Disposition: inline
-    
-    #{html}
-    
-    --boundary-string--
-  EOF
+def format_multipart(parts)
+  mp_body = ""
+  parts.each do |part|
+    disposition = 'inline'
+    name = ''
+    if(part[:filename]) then
+      disposition = "attachment; filename=\"#{part[:filename]}\""
+      name = "; name=\"#{part[:filename]}\""
+    end
+    mp_body += <<~EOF
+      --boundary-string
+      Content-Type: #{part[:type]}; charset="utf-8"#{name}
+      Content-Transfer-Encoding: 7BIT
+      Content-Disposition: #{disposition}
+      
+      #{part[:body]}
+    EOF
+  end
+  mp_body += "--boundary-string--"
 
   return mp_body
 end
