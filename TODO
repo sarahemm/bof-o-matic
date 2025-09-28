@@ -1,4 +1,5 @@
-- Grid view that has all times on the X axis and rooms on the Y
+- Add a link to the self-scheduling email to avoid need to type in a token
+- Signal bom-maild to do a mail run immediately once something is queued, to speed up queue running without constant polling
 
 
 BUGS

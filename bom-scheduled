@@ -1,0 +1,64 @@
+#!/usr/bin/ruby
+
+require 'sequel'
+require 'yaml'
+require 'logger'
+require 'optparse'
+require './email_builder.rb'
+
+logger = Logger.new(STDOUT, progname: 'bom-scheduled')
+logger.level = Logger::WARN
+
+foreground = false
+opt_parser = OptionParser.new do |opts|
+  opts.banner = "Usage: #{$0} [options]"
+
+  opts.on("-h", "--help", "Prints this help") do
+    puts opts
+    exit
+  end
+
+  opts.on("-f", "--foreground", "Don't daemonize, stay in foreground and send logs to stdout") do
+    foreground = true
+  end
+
+  opts.on("-l", "--log-level=LEVEL", "Log level (debug, info, warn, or error)") do |level|
+    logger.level = level
+  end
+end
+opt_parser.parse!
+
+db = Sequel.connect("sqlite://#{Dir.pwd}/bof-o-matic.sqlite3")
+cfg = YAML.load(File.read("bof-o-matic.yaml"))
+
+require './bom_models.rb'
+
+if(!cfg['selfschedule_delay']) then
+  logger.error "Scheduler followups are not enabled in configuration, exiting."
+  Kernel.exit 1
+end
+
+if(!foreground) then
+  logger.reopen("bom-scheduled.log") # TODO: this should be configurable
+  Process.daemon
+end
+
+while true do
+  logger.debug "Starting scheduler followup run"
+
+  Proposal.where(sent_to_schedulers: false).exclude(scheduling_token: nil).each do |proposal|
+    # check if this proposal passed the interest threshold at least selfschedule_delay minutes ago
+    # since the token would have been issued at that point
+    threshold_interest = Interest.where(proposal_id: proposal.id).order(:submitted_at).limit(cfg['interest_threshold']).last
+    self_scheduling_started_ago = (Time.now - threshold_interest.submitted_at) / 60
+    next unless self_scheduling_started_ago > cfg['selfschedule_delay']
+
+    logger.info "Sending scheduler followup for #{proposal[:title]}"
+    queue_interest_emails_to_schedulers proposal[:id]
+    proposal.sent_to_schedulers = true
+    proposal.save
+  end
+  
+  logger.debug "Finished scheduler followup run, going to sleep"
+  sleep 60
+end
