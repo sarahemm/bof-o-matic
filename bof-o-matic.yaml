@@ -8,7 +8,9 @@ slot_length: 60
 reminder_mins_before: 10
 interest_threshold: 3
 
-generate_pdfs: true
+selfschedule_delay: 15
+
+generate_pdfs: false
 
 email_hold: false
 email_to_domain_filter:

@@ -1,0 +1,10 @@
+%h2 Self-Scheduling
+- if @message
+  %h3.text-danger
+    = @message
+%form{method: 'post'}
+  %div.mb-3
+    %label.form-label{for: 'username'} Token:
+    %input.form-control#token{name: 'token', required: true}
+  %button.btn.btn-primary.mb-3{type: 'submit'} Access Scheduler
+%div.form-text

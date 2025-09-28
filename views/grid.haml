@@ -1,6 +1,8 @@
 %h2= "#{Time.now.year} BoF Schedule"
 - if is_logged_in?
   %h3.text-info You are logged in as a scheduler, click any cell to schedule a session at that time.
+- elsif is_self_scheduling?
+  %h3.text-info You are self-scheduling a session, click any cell to schedule your session at that time.
 - cellId = 0
 %table.table.table-bordered
   %thead
@@ -23,7 +25,7 @@
           - else
             - timeslot = "#{day.strftime('%Y-%m-%d')} #{this_slot_starts.strftime('%H:%M')}"
             - click_js = ""
-            - if is_logged_in?
+            - if is_logged_in? or is_self_scheduling?
               - click_js = "gridSchedulePopup('#{timeslot}', '#{cellId}', '#{day.strftime('%A')} at #{this_slot_starts.strftime('%H:%M')}');"
             %td{onClick: click_js, id: cellId}
               %div{id: timeslot}
@@ -33,7 +35,7 @@
             - cellId += 1
       - this_slot_starts += settings.slot_length * 60
 
-- if is_logged_in?
+- if is_logged_in? or is_self_scheduling?
   .modal.fade#scheduleModal{tabIndex: -1, role: :dialog}
     .modal-dialog{role: :document}
       .modal-content

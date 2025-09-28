@@ -26,6 +26,7 @@ configure do
   set :generate_pdfs, CFG['generate_pdfs']
   set :interest_threshold, CFG['interest_threshold']
   set :kiosk_timeout, CFG['kiosk_timeout']
+  set :selfschedule_delay, CFG['selfschedule_delay']
 end
 
 helpers do
@@ -53,6 +54,10 @@ end
 
 def is_logged_in?
   session[:user]
+end
+
+def is_self_scheduling?
+  session[:scheduling_token]
 end
 
 def kiosk_mode?
@@ -129,7 +134,7 @@ post '/proposals/:id/interest' do
   DB[:interests].insert(data)
 
   if(Interest.where(proposal_id: params[:id]).count == settings.interest_threshold) then
-    queue_interest_emails(params[:id])
+    queue_interest_email_to_proposer(params[:id], settings.selfschedule_delay)
   end
 
   redirect "/proposals/#{params[:id]}"
@@ -150,19 +155,37 @@ get '/grid' do
       .select_more{Sequel.as(count(:name), :count)}
       .group(:title)
     @rooms = Room.where(active: true)
+  elsif is_self_scheduling? then
+    @unscheduled_proposals = Proposal.association_left_join(:interest)
+      .association_left_join(:schedule)
+      .select(Sequel[:proposals][:id], :title, :description, :submitted_by, :name, :scheduler_notes)
+      .where(start_time: nil, scheduling_token: session[:scheduling_token])
+      .select_more{Sequel.as(count(:name), :count)}
+      .group(:title)
+    @rooms = Room.where(active: true)
   end
 
   haml :grid
 end
 
 post '/grid' do
-  require_logged_in
+  redirect '/login' unless is_logged_in? or is_self_scheduling?
+
+  scheduled_by = session[:user]
+
+  if(is_self_scheduling?) then
+    # validate that the token and session they're scheduling match
+    # just in case there's any funny business
+    proposal = DB[:proposals].where(scheduling_token: session[:scheduling_token]).first
+    return "Unable to schedule due to mismatch between token and ID. Please contact an admin." unless proposal[:id] == params[:proposal_id].to_i
+    scheduled_by = proposal[:submitted_by]
+  end
 
   data = {
     :proposal_id => params[:proposal_id],
     :room_id => params[:room_id],
     :start_time => Time.parse(params[:timeslot]).strftime("%Y-%m-%d %H:%M:%S"),
-    :scheduled_by => session[:user]
+    :scheduled_by => scheduled_by
   }
   DB[:schedules].insert(data)
 
@@ -171,6 +194,7 @@ post '/grid' do
   end
 
   queue_emails_when_scheduled(params[:proposal_id])
+  session.delete :scheduling_token
 
   redirect '/grid'
 end
@@ -248,8 +272,32 @@ end
 get '/kiosk_timeout' do
   # log any logged-in user out and redirect to where we've been asked to go
   session.delete :user
+  session.delete :scheduling_token
 
   redirect session['kiosk_mode_url']
+end
+
+get '/selfschedule' do
+  haml :selfschedule
+end
+
+post '/selfschedule' do
+  redirect '/selfschedule' unless params[:token]
+
+  # TODO: should be case-insensitive and allow for extra whitespace probably
+  proposal = DB[:proposals].where(scheduling_token: params[:token]).first
+  if(!proposal) then
+    @message = "Invalid token, please check your email and try again."
+    return haml :selfschedule
+  end
+  schedules = DB[:schedules].where(proposal_id: proposal[:id])
+  if(schedules.count > 0) then
+    @message = "This session has already been scheduled by #{schedules.first[:scheduled_by]}, the token is now invalid."
+    return haml :selfschedule
+  end
+  session[:scheduling_token] = params[:token]
+
+  redirect '/grid'
 end
 
 get '/login' do
@@ -268,6 +316,7 @@ end
 
 get '/logout' do
   session.delete :user
+  session.delete :scheduling_token
   redirect '/'
 end
 

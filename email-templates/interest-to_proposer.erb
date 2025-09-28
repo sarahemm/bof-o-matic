@@ -1,0 +1,13 @@
+The BoF "<%= proposal[:title] %>" which you proposed, has now received interest from <%= interested.count %> people.
+
+The following attendees have expressed interest in this session:
+ - <%= interested.join("\n - ") %>
+
+Please log in and self-schedule this session. If you do not schedule it within <%= selfschedule_delay %> minutes, a scheduler will be notified to schedule it for you.
+
+You can do this by clicking the "Self-Schedule" tool in bof-o-matic, and entering the following words:
+<%= token %>
+
+Thank you,
+ - BoF Scheduling System
+

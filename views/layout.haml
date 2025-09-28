@@ -6,7 +6,7 @@
     %link{rel: :stylesheet, href: "/assets/css/bof-o-matic.css"}
     %script{src: "/assets/js/bootstrap.bundle.min.js"}
     %script{src: "/assets/js/bof-o-matic.js"}
-    - if is_logged_in?
+    - if is_logged_in? or is_self_scheduling?
       -# only need these for the scheduler's tasks
       %script{src: "/assets/js/jquery.min.js"}
       %script{src: "/assets/js/scheduler.js"}
@@ -28,16 +28,19 @@
           document.addEventListener('keypress', function(event) {
             kioskTimerReset();
           });
-    %nav.navbar.navbar-expand-sm{class: is_logged_in? ? 'bg-warning' : 'bg-body-secondary'}
+    %nav.navbar.navbar-expand-sm{class: is_logged_in? ? 'bg-warning' : is_self_scheduling? ? 'bg-info' : 'bg-body-secondary'}
       .container-fluid
         %a.navbar-brand{href: '/'} BoF-O-Matic
         %button.navbar-toggler{type: :button, 'data-bs-toggle': :collapse, 'data-bs-target': '#navbarSupportedContent', 'aria-controls': 'navbarSupportedContent', 'aria-expanded': false, 'aria-label': 'Toggle navigation'}
           %span.navbar-toggler-icon
         .collapse.navbar-collapse#navbarSupportedContent
           %ul.navbar-nav.me-auto.mb-2.mb-lg-0
-            -nav_link uri: '/proposals', text: "All #{Time.now.year} BoFs"
-            -nav_link uri: '/proposals/new', text: 'Submit Proposal'
+            - if !is_self_scheduling?
+              -nav_link uri: '/proposals', text: "All #{Time.now.year} BoFs"
+              -nav_link uri: '/proposals/new', text: 'Submit Proposal'
             -nav_link uri: '/grid', text: 'Schedule Grid'
+            - if !is_logged_in? and !is_self_scheduling?
+              -nav_link uri: '/selfschedule', text: 'Self-Scheduling'
             - if is_logged_in?
               %li.nav-item.dropdown
                 %a.nav-link.dropdown-toggle{href: '#', role: :button, 'aria-expanded': false, 'data-bs-toggle': :dropdown } Scheduler Tools
@@ -52,6 +55,8 @@
                     %a.dropdown-item{href: '/password'} Change Password
             - if is_logged_in?
               -nav_link uri: '/logout', text: 'Log Out'
+            - elsif is_self_scheduling?
+              -nav_link uri: '/logout', text: 'Cancel Self-Scheduling'
             - else
               -nav_link uri: '/login', text: 'Scheduler Login'
           %ul.d-flex

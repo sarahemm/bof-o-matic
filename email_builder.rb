@@ -98,7 +98,27 @@ def queue_emails_when_unscheduled(proposal_id, unscheduled_by)
   end
 end
 
-def queue_interest_emails(proposal_id)
+def queue_interest_email_to_proposer(proposal_id, selfschedule_delay)
+  proposal = Proposal[proposal_id]
+  interests = Interest.where(proposal_id: proposal_id)
+  interested = interests.map(:name)
+  token = File.readlines("token-words.txt").sample(3).map {|t| t.strip}.join(" ")
+  
+  subject = "The BoF '#{proposal[:title]}' has reached enough interest to be scheduled"
+  tmpl = ERB.new(File.read('email-templates/interest-to_proposer.erb'))
+
+  proposal.scheduling_token = token
+  proposal.save
+
+  mail = Mail.new(
+    to_address: proposal.submitter_email,
+    subject: subject,
+    body: tmpl.result(binding)
+  )
+  mail.save
+end
+
+def queue_interest_emails_to_schedulers(proposal_id)
   proposal = Proposal[proposal_id]
   interests = Interest.where(proposal_id: proposal_id)
   interested = interests.map(:name)
