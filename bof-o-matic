@@ -94,6 +94,7 @@ post '/proposals/new' do
   data = {
     :submitted_by => params[:name],
     :submitter_email => params[:email],
+    :submitter_phone => params[:phone],
     :title => params[:title],
     :description => params[:description],
     :scheduler_notes => params[:notes]
@@ -129,6 +130,7 @@ post '/proposals/:id/interest' do
     :proposal_id => params[:id],
     :name => params[:name],
     :email => params[:email],
+    :phone => params[:phone],
   }
   data[:submitted_at] = Time.now
   DB[:interests].insert(data)
