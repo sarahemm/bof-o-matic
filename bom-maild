@@ -87,7 +87,6 @@ while true do
     else
       logger.info "Successfully sent message #{message[:id]} to #{message[:to_address]}"
       if(cfg['keep_sent_mail']) then
-        # Commented this out for testing only!
         logger.debug "Marking message #{message[:id]} as sent"
         message.status = 'SENT'
         message.save
