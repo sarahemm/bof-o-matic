@@ -196,6 +196,15 @@ def queue_interest_emails_to_schedulers(proposal_id)
     )
     mail.save
   end
+  
+  sms_tmpl = ERB.new(File.read('sms-templates/interest-to_schedulers.erb'))
+  Scheduler.exclude(phone: nil).each do |scheduler|
+    text = Text.new(
+      to_phone: scheduler.phone,
+      body: sms_tmpl.result(binding)
+    )
+    text.save
+  end
 end
 
 def queue_reminder_emails(proposal_id, reminder_minutes)

@@ -1,4 +1,3 @@
-- Add phone number field to schedulers and send notifications to them too
 - Display the self-scheduling token on the proposal view for schedulers
 - Add a link to the self-scheduling email to avoid need to type in a token
 - Signal bom-maild and bom-smsd to do runs immediately once something is queued, to speed up queue running without constant polling
