@@ -265,6 +265,13 @@ post '/schedulers' do
     scheduler.save
 
     return haml :scheduler_add
+  elsif(params[:action] == 'reset') then
+    @new_passwd = "correct horse #{File.readlines("token-words.txt").sample(2).map {|t| t.strip}.join(" ")}"
+    user = Scheduler[params[:id]]
+    user.update pwhash: BCrypt::Password.create(@new_passwd)
+    user.save
+
+    return haml :scheduler_resetpass
   end
 
   redirect '/schedulers'

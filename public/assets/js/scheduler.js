@@ -82,6 +82,11 @@ function readyDeleteScheduler(username, id) {
   document.getElementById('schedulerId').value = id;
 }
 
+function readyResetScheduler(username, id) {
+  document.getElementById('resetTitle').innerText = "Reset Password for Scheduler '" + username + "'";
+  document.getElementById('resetSchedulerId').value = id;
+}
+
 function displaySchedulerNotes() {
   var notes = $('option:selected', '#unscheduledproposals').attr('data-notes');
   if(notes === undefined || notes == '') {

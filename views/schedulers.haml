@@ -12,6 +12,8 @@
           - if session[:user] != scheduler.username then
             %button.btn.btn-primary{type: :button, 'data-bs-toggle' => 'modal', 'data-bs-target' => '#deleteModal', onClick: "readyDeleteScheduler('#{scheduler.username}', #{scheduler.id});"}
               Delete Scheduler
+            %button.btn.btn-primary{type: :button, 'data-bs-toggle' => 'modal', 'data-bs-target' => '#resetModal', onClick: "readyResetScheduler('#{scheduler.username}', #{scheduler.id});"}
+              Reset Password
 
 %button.btn.btn-primary{type: :button, 'data-bs-toggle' => 'modal', 'data-bs-target' => '#addModal'} Add Scheduler
 
@@ -58,4 +60,21 @@
           %button.btn.btn-danger{type: :submit}
             Delete Scheduler
 
+.modal.fade#resetModal{tabIndex: -1, role: :dialog}
+  .modal-dialog{role: :document}
+    .modal-content
+      %form{method: :post}
+        .modal-header
+          %h5.modal-title#resetTitle
+            %div Reset Scheduler's Password
+          %button.btn-close{type: :button, 'data-bs-dismiss' => 'modal'}
+        .modal-body
+          %input{type: :hidden, name: 'action', value: 'reset'}
+          %input#resetSchedulerId{type: :hidden, name: 'id'}
+          %p Are you sure you want to reset this scheduler's password?
+        .modal-footer
+          %button.btn.btn-secondary{type: :button, 'data-bs-dismiss' => 'modal'}
+            Cancel
+          %button.btn.btn-danger{type: :submit}
+            Reset Password
 

@@ -1,11 +1,12 @@
 - Complete output system (once defined)
 - Test mailgun email sending (once creds are available)
 
+- Add editing of scheduler email/phone to both self-management and user management screens
+
 BUGS
 - PDF generation fails if non-ASCII characters are involved, due to needing
   external fonts.
 
 
 "nice to haves"
-- Scheduler user management screen (instead of having to use sqlite3 CLI)
 - Signal bom-maild and bom-smsd to do runs immediately once something is queued, to speed up queue running without constant polling
