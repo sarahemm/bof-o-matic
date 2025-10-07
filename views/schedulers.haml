@@ -1,0 +1,61 @@
+%h2 Schedulers
+%table.table.table-striped
+  %thead
+    %tr
+      %th{scope: 'col'} Username
+      %th{scope: 'col'} Controls
+  %tbody
+    - @schedulers.each do |scheduler|
+      %tr
+        %td= scheduler.username
+        %td
+          - if session[:user] != scheduler.username then
+            %button.btn.btn-primary{type: :button, 'data-bs-toggle' => 'modal', 'data-bs-target' => '#deleteModal', onClick: "readyDeleteScheduler('#{scheduler.username}', #{scheduler.id});"}
+              Delete Scheduler
+
+%button.btn.btn-primary{type: :button, 'data-bs-toggle' => 'modal', 'data-bs-target' => '#addModal'} Add Scheduler
+
+.modal.fade#addModal{tabIndex: -1, role: :dialog}
+  .modal-dialog{role: :document}
+    .modal-content
+      %form{method: :post}
+        .modal-header
+          %h5.modal-title
+            Add New Scheduler
+          %button.btn-close{type: :button, 'data-bs-dismiss' => 'modal'}
+        .modal-body
+          %input{type: :hidden, name: 'action', value: 'add'}
+          %label{for: "username"}
+            Username:
+          %input.form-control#username{name: 'username'}
+          %label{for: "email"}
+            Email (optional):
+          %input.form-control#email{name: 'email'}
+          %label{for: "phone"}
+            Phone (optional):
+          %input.form-control#phone{name: 'phone'}
+        .modal-footer
+          %button.btn.btn-secondary{type: :button, 'data-bs-dismiss' => 'modal'}
+            Cancel
+          %button.btn.btn-primary{type: :submit}
+            Add New Scheduler
+
+.modal.fade#deleteModal{tabIndex: -1, role: :dialog}
+  .modal-dialog{role: :document}
+    .modal-content
+      %form{method: :post}
+        .modal-header
+          %h5.modal-title#deleteTitle
+            %div Delete Scheduler
+          %button.btn-close{type: :button, 'data-bs-dismiss' => 'modal'}
+        .modal-body
+          %input{type: :hidden, name: 'action', value: 'delete'}
+          %input#schedulerId{type: :hidden, name: 'id'}
+          %p Are you sure you want to delete this scheduler's account?
+        .modal-footer
+          %button.btn.btn-secondary{type: :button, 'data-bs-dismiss' => 'modal'}
+            Cancel
+          %button.btn.btn-danger{type: :submit}
+            Delete Scheduler
+
+

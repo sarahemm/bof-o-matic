@@ -54,6 +54,8 @@
                   %li
                     %a.dropdown-item{href: '/texts'} SMS Queue
                   %li
+                    %a.dropdown-item{href: '/schedulers'} Scheduler Manager
+                  %li
                     %a.dropdown-item{href: '/password'} Change Password
             - if is_logged_in?
               -nav_link uri: '/logout', text: 'Log Out'

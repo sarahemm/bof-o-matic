@@ -77,6 +77,11 @@ function readyRenameRoom(name, id) {
   document.getElementById('roomId').value = id;
 }
 
+function readyDeleteScheduler(username, id) {
+  document.getElementById('deleteTitle').innerText = "Delete Scheduler '" + username + "'";
+  document.getElementById('schedulerId').value = id;
+}
+
 function displaySchedulerNotes() {
   var notes = $('option:selected', '#unscheduledproposals').attr('data-notes');
   if(notes === undefined || notes == '') {

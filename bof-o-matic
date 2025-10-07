@@ -239,6 +239,38 @@ post '/rooms' do
   redirect '/rooms'
 end
 
+get '/schedulers' do
+  require_logged_in
+
+  @schedulers = Scheduler.all
+
+  haml :schedulers
+end
+
+post '/schedulers' do
+  require_logged_in
+  
+  if(params[:action] == 'delete') then
+    Scheduler[params[:id]].destroy
+  elsif(params[:action] == 'add') then
+    @new_passwd = "correct horse #{File.readlines("token-words.txt").sample(2).map {|t| t.strip}.join(" ")}"
+    @new_username = params[:username]
+    pwhash = BCrypt::Password.create(@new_passwd)
+    scheduler = Scheduler.new(
+      username: params[:username],
+      email: params[:email],
+      phone: params[:phone],
+      pwhash: pwhash
+    )
+    scheduler.save
+
+    return haml :scheduler_add
+  end
+
+  redirect '/schedulers'
+end
+
+
 get '/mails' do
   require_logged_in
 
