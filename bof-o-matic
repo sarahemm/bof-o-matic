@@ -20,6 +20,7 @@ configure do
   set :host_authorization, { permitted_hosts: [] }
 
   set :conference_name, CFG['conference_name']
+  set :base_url, CFG['base_url']
   set :conference_start_time, Time.parse(CFG['conference_starts'])
   set :conference_end_time, Time.parse(CFG['conference_ends'])
   set :slot_length, CFG['slot_length']
@@ -136,7 +137,7 @@ post '/proposals/:id/interest' do
   DB[:interests].insert(data)
 
   if(Interest.where(proposal_id: params[:id]).count == settings.interest_threshold) then
-    queue_interest_email_to_proposer(params[:id], settings.selfschedule_delay)
+    queue_interest_email_to_proposer(params[:id], settings.selfschedule_delay, settings.base_url)
   end
 
   redirect "/proposals/#{params[:id]}"
@@ -295,6 +296,10 @@ get '/kiosk_timeout' do
 end
 
 get '/selfschedule' do
+  haml :selfschedule
+end
+
+get '/selfschedule/:token' do
   haml :selfschedule
 end
 

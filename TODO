@@ -1,6 +1,5 @@
-- Add a link to the self-scheduling email to avoid need to type in a token
-- Signal bom-maild and bom-smsd to do runs immediately once something is queued, to speed up queue running without constant polling
-
+- Complete output system (once defined)
+- Test mailgun email sending (once creds are available)
 
 BUGS
 - PDF generation fails if non-ASCII characters are involved, due to needing
@@ -9,3 +8,4 @@ BUGS
 
 "nice to haves"
 - Scheduler user management screen (instead of having to use sqlite3 CLI)
+- Signal bom-maild and bom-smsd to do runs immediately once something is queued, to speed up queue running without constant polling

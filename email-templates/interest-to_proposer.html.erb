@@ -1,0 +1,13 @@
+<p>The BoF "<%= proposal[:title] %>" which you proposed, has now received interest from <%= interested.count %> people.</p>
+
+<p>The following attendees have expressed interest in this session:</p>
+<ul>
+<%= interested.map {|item| "<li>#{item}</li>"}.join("\n") %>
+</ul>
+
+<p>Please log in and self-schedule this session. If you do not schedule it within <%= selfschedule_delay %> minutes, a scheduler will be notified to schedule it for you.</p>
+
+<p>You can do this by clicking the "Self-Schedule" tool in bof-o-matic, and entering the following words: <%= token %>. Alternatively, click the following link to <a href="<%= selfschedule_link %>">self-schedule</a> if you are on the wifi.</p>
+
+<p>Thanks!</p>
+<p> - BoF Team</p>

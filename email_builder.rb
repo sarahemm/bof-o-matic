@@ -3,6 +3,7 @@
 #       to DRY it out a bunch
 
 require 'erb'
+require 'cgi'
 require 'add_to_calendar'
 
 def queue_emails_when_scheduled(proposal_id)
@@ -146,24 +147,31 @@ def queue_emails_when_unscheduled(proposal_id, unscheduled_by)
   end
 end
 
-def queue_interest_email_to_proposer(proposal_id, selfschedule_delay)
+def queue_interest_email_to_proposer(proposal_id, selfschedule_delay, base_url)
   proposal = Proposal[proposal_id]
 
   interests = Interest.where(proposal_id: proposal_id)
   interested = interests.map(:name)
 
   token = File.readlines("token-words.txt").sample(3).map {|t| t.strip}.join(" ")
+  selfschedule_link = "#{base_url}/selfschedule?token=#{CGI.escape(token)}"
   proposal.scheduling_token = token
   proposal.save
 
   if(proposal[:submitter_email]) then
     subject = "The BoF '#{proposal[:title]}' has reached enough interest to be scheduled"
     tmpl = ERB.new(File.read('email-templates/interest-to_proposer.erb'))
+    html_tmpl = ERB.new(File.read('email-templates/interest-to_proposer.html.erb'))
+
+    body = format_multipart([
+      {type: 'text/plain', body: tmpl.result(binding)},
+      {type: 'text/html', body: html_tmpl.result(binding)},
+    ])
 
     mail = Mail.new(
       to_address: proposal.submitter_email,
       subject: subject,
-      body: tmpl.result(binding)
+      body: body
     )
     mail.save
   end

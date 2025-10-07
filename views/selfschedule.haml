@@ -2,9 +2,9 @@
 - if @message
   %h3.text-danger
     = @message
-%form{method: 'post'}
+%form{method: 'post', action:'/selfschedule'}
   %div.mb-3
     %label.form-label{for: 'username'} Token:
-    %input.form-control#token{name: 'token', required: true}
+    %input.form-control#token{name: 'token', required: true, value: @params[:token]}
   %button.btn.btn-primary.mb-3{type: 'submit'} Access Scheduler
 %div.form-text

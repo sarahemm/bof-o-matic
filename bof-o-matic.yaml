@@ -1,5 +1,6 @@
 ---
 conference_name: "Example Conference"
+base_url: "http://bof-o-matic.sen.cx"
 
 conference_starts: '2025-11-07 16:00'
 conference_ends: '2025-11-09 16:00'
@@ -19,6 +20,11 @@ keep_sent_mail: true
 smtp_server: 'mail.sen.cx'
 smtp_port: 25
 email_from: 'Example Conference BoFs <bofomatic@sen.cx>'
+
+sms_twilio_sid: 'SID GOES HERE'
+sms_twilio_authtoken: 'AUTHTOKEN GOES HERE'
+sms_from: '+18155221201'
+keep_sent_sms: true
 
 kiosk_timeout: 300
 
