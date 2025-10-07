@@ -51,7 +51,10 @@ while true do
     # since the token would have been issued at that point
     threshold_interest = Interest.where(proposal_id: proposal.id).order(:submitted_at).limit(cfg['interest_threshold']).last
     self_scheduling_started_ago = (Time.now - threshold_interest.submitted_at) / 60
-    next unless self_scheduling_started_ago > cfg['selfschedule_delay']
+    if(self_scheduling_started_ago <= cfg['selfschedule_delay']) then
+      logger.debug "Not sending followup for #{proposal[:title]} as self-scheduling only started #{self_scheduling_started_ago} minutes ago."
+      next
+    end
 
     logger.info "Sending scheduler followup for #{proposal[:title]}"
     queue_interest_emails_to_schedulers proposal[:id]
