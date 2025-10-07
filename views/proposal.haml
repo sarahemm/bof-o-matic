@@ -2,6 +2,8 @@
 %div
   %h3= "#{@proposal[:description]}"
   %p= "Proposed by: #{@proposal[:submitted_by]}"
+  - if(is_logged_in? and @proposal[:scheduling_token] and @proposal.schedule_dataset.empty?) then
+    %p= "Self-scheduling Token: #{@proposal[:scheduling_token]}"
   - if(not @proposal.schedule_dataset.empty?) then
     - schedule_entry = @proposal.schedule_dataset.first
     - start_time = schedule_entry[:start_time]
