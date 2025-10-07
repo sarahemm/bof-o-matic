@@ -1,0 +1,31 @@
+:javascript
+  $(document).ready(function() {
+    const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
+    const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
+  });
+
+%h2= "BoF-O-Matic SMS Queue"
+%table.table.table-striped
+  %thead
+    %tr
+      %th{scope: 'col'} To
+      %th{scope: 'col'} Queued At
+      %th{scope: 'col'} Status
+
+  - @texts.each do |text|
+    %tr
+      %td
+        %a{href: "/texts/#{text[:id]}"}= text[:to_phone]
+      %td= text[:queued_at]
+      %td
+        - tip = 'This message is in an unknown or invalid status. It will be ignored and the queue runner will not interact with it.'
+        -case text[:status]
+          - when 'READY'
+            - tip = 'This message is in the queue waiting to be delivered to Twilio.'
+          - when 'RETRY'
+            - tip = 'Sending this message failed in a temporary way, so it will be re-tried in the near future.'
+          - when 'ERROR'
+            - tip = 'Sending this message failed in a permanent way, it will not be attempted again.'
+          - when 'SENT'
+            - tip = 'This SMS has been successfully handed to Twilio, and no further action will be taken on it.'
+        %span{'data-bs-toggle': :tooltip, 'data-bs-title': tip}= text[:status]

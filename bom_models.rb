@@ -23,3 +23,6 @@ end
 
 class Mail < Sequel::Model
 end
+
+class Text < Sequel::Model
+end

@@ -1,0 +1,9 @@
+%h2 View Queued SMS
+%div
+  %p= "Status: #{@text[:status]}"
+  %p= "Queued at: #{@text[:queued_at]}"
+  %p= "To: #{@text[:to_phone]}"
+  %hr
+  %pre= @text[:body]
+  %hr
+

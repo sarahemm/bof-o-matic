@@ -1,0 +1,83 @@
+#!/usr/bin/ruby
+
+require 'sequel'
+require 'yaml'
+require "twilio-ruby"
+require 'logger'
+require 'optparse'
+
+logger = Logger.new(STDOUT, progname: 'bom-smsd')
+logger.level = Logger::WARN
+
+foreground = false
+opt_parser = OptionParser.new do |opts|
+  opts.banner = "Usage: #{$0} [options]"
+
+  opts.on("-h", "--help", "Prints this help") do
+    puts opts
+    exit
+  end
+
+  opts.on("-f", "--foreground", "Don't daemonize, stay in foreground and send logs to stdout") do
+    foreground = true
+  end
+
+  opts.on("-l", "--log-level=LEVEL", "Log level (debug, info, warn, or error)") do |level|
+    logger.level = level
+  end
+end
+opt_parser.parse!
+
+db = Sequel.connect("sqlite://#{Dir.pwd}/bof-o-matic.sqlite3")
+cfg = YAML.load(File.read("bof-o-matic.yaml"))
+
+require './bom_models.rb'
+
+if(!foreground) then
+  logger.reopen("bom-smsd.log") # TODO: this should be configurable
+  Process.daemon
+end
+
+while true do
+  logger.debug "Starting SMS run"
+  if(cfg['sms_hold']) then
+    # if we want to hold SMSs in the queue for testing or because of a system
+    # issue, just keep waiting until that flag is removed
+    logger.warn "SMS queue is on hold in configuration file, waiting..."
+    while(cfg['sms_hold']) do
+      sleep 60
+      cfg = YAML.load(File.read("bof-o-matic.yaml"))
+    end
+    logger.warn "SMS queue hold has been released, proceeding"
+  end
+
+  sms_client = Twilio::REST::Client.new cfg['sms_twilio_sid'], cfg['sms_twilio_authtoken']
+  Text.where(status: ['READY', 'RETRY']).each do |message|
+    logger.info "Sending '#{message[:body]}' to #{message[:to_phone]}"
+
+    begin
+      sms = sms_client.messages.create(
+        body: message[:body],
+        to: message[:to_phone],  # Text this number
+        from: cfg['sms_from'],
+      )
+
+      logger.info "Message #{message[:id]} sent, SID is #{sms.sid}"
+      if(cfg['keep_sent_sms']) then
+        logger.debug "Marking message #{message[:id]} as sent"
+        message.status = 'SENT'
+        message.save
+      else
+        logger.debug "Deleting message #{message[:id]} from the queue"
+        message.destroy
+      end
+    rescue Twilio::REST::RestError => e
+      logger.error "Error #{e.code} sending message #{message[:id]}, marking as ERROR"
+      message.status = 'ERROR'
+      message.save
+    end
+  end
+
+  logger.debug "Finished SMS run, going to sleep"
+  sleep 60
+end

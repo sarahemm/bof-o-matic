@@ -253,6 +253,21 @@ get '/mails/:id' do
   haml :mail
 end
 
+get '/texts' do
+  require_logged_in
+
+  @texts = Text.all
+
+  haml :texts
+end
+
+get '/texts/:id' do
+  require_logged_in
+
+  @text = Text[params[:id]]
+  haml :text
+end
+
 get '/kiosk' do
   require_logged_in
 
