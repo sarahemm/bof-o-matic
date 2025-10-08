@@ -7,7 +7,8 @@
   %tbody
     - @schedulers.each do |scheduler|
       %tr
-        %td= scheduler.username
+        %td
+          %a{href: "/scheduler/#{scheduler.id}"}= scheduler.username
         %td
           - if session[:user] != scheduler.username then
             %button.btn.btn-primary{type: :button, 'data-bs-toggle' => 'modal', 'data-bs-target' => '#deleteModal', onClick: "readyDeleteScheduler('#{scheduler.username}', #{scheduler.id});"}

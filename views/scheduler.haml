@@ -1,0 +1,10 @@
+%h2 Scheduler '#{@scheduler[:username]}'
+
+%form{method: 'post'}
+  %div.mb-3
+    %label.form-label{for: 'email'} Email (optional):
+    %input.form-control#email{name: 'email', value: @scheduler[:email]}
+  %div.mb-3
+    %label.form-label{for: 'phone'} Phone (optional, for SMS notifications):
+    %input.form-control#phone{name: 'phone', value: @scheduler[:phone]}
+  %input.btn.btn-primary.mb-3{type: 'submit', value: 'Update Information'}

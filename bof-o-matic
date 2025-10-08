@@ -277,6 +277,19 @@ post '/schedulers' do
   redirect '/schedulers'
 end
 
+get '/scheduler/:id' do
+  @scheduler = Scheduler[params[:id]]
+
+  haml :scheduler
+end
+
+post '/scheduler/:id' do
+  user = Scheduler[params[:id]]
+  user.update email: params[:email], phone: params[:phone]
+  user.save
+
+  redirect '/schedulers'
+end
 
 get '/mails' do
   require_logged_in
