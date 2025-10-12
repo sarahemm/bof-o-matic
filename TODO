@@ -1,5 +1,5 @@
 - Test mailgun email sending (once creds are available)
-- Finalize label format and write bom-labeld to spool labels
+- Finalize label format
 - Spool PNGs for unschedules too, so that they can be put over the cancelled event on the grid
 
 BUGS

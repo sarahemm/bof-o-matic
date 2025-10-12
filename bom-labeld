@@ -1,0 +1,90 @@
+#!/usr/bin/ruby
+
+require 'logger'
+require 'optparse'
+require 'rb-inotify'
+
+SPOOL_DIR="png-spool"
+
+class QlLabelPrinter
+  attr_reader :port, :model, :media_id
+
+  def initialize()
+    printers = `brother_ql discover 2>/dev/null`
+    unless(printers.include? 'usb') then
+      puts "No printers found, exiting."
+      Kernel.exit 1
+    end
+    @port = printers.split('_')[0] # trim off the high-ascii garbage that 'discover' for some reason outputs after the port
+    printer_status = `brother_ql --printer #{@port} status 2>/dev/null`
+    printer_status.each_line do |line|
+      if(line.include? 'Model') then
+        @model = line.split(':')[1].strip
+      elsif(line.include? 'Media') then
+        @media_id = line.split(':')[2].strip.split(')')[0]
+      end
+    end
+  end
+
+  def print(filename)
+    print_status = system("brother_ql --printer #{@port} --model #{@model} print --label=#{@media_id} #{filename} -r 90")
+  end
+end
+
+def print_and_delete(path, printer, logger)
+  print_status = printer.print(path)
+  if(print_status) then
+    logger.info "Successfully printed, removing from spool."
+    File.delete(path)
+  else
+    logger.error "Printing #{filename} failed, leaving document in queue."
+  end
+end
+
+
+logger = Logger.new(STDOUT, progname: 'bom-labeld')
+logger.level = Logger::WARN
+
+foreground = false
+opt_parser = OptionParser.new do |opts|
+  opts.banner = "Usage: #{$0} [options]"
+
+  opts.on("-h", "--help", "Prints this help") do
+    puts opts
+    exit
+  end
+
+  opts.on("-f", "--foreground", "Don't daemonize, stay in foreground and send logs to stdout") do
+    foreground = true
+  end
+
+  opts.on("-l", "--log-level=LEVEL", "Log level (debug, info, warn, or error)") do |level|
+    logger.level = level
+  end
+end
+opt_parser.parse!
+
+if(!foreground) then
+  logger.reopen("bom-labeld.log") # TODO: this should be configurable
+  Process.daemon
+end
+
+logger.info "Discovering printers..."
+printer = QlLabelPrinter.new
+logger.info "Found a #{printer.model}!"
+notifier = INotify::Notifier.new
+logger.debug "Ready to print labels."
+
+logger.debug "Pre-running the queue..."
+Dir.glob("#{SPOOL_DIR}/*.png").each do |path|
+  print_and_delete path, printer, logger
+end
+
+logger.debug "Pre-run complete, watching spool directory for new files..."
+notifier.watch(SPOOL_DIR, :moved_to, :create) do |event|
+  next unless event.name.end_with? '.png'
+  logger.info "Found new label #{event.name}, printing."
+  print_and_delete "#{SPOOL_DIR}/#{event.name}", printer, logger
+end
+
+notifier.run
