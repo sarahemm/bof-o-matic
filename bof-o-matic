@@ -15,6 +15,7 @@ DB = Sequel.connect("sqlite://#{Dir.pwd}/bof-o-matic.sqlite3")
 CFG = YAML.load(File.read("bof-o-matic.yaml"))
 
 require './pdf_generator.rb' if CFG['generate_pdfs']
+require './png_generator.rb' if CFG['generate_pngs']
 
 configure do
   set :host_authorization, { permitted_hosts: [] }
@@ -25,6 +26,10 @@ configure do
   set :conference_end_time, Time.parse(CFG['conference_ends'])
   set :slot_length, CFG['slot_length']
   set :generate_pdfs, CFG['generate_pdfs']
+  set :generate_pngs, CFG['generate_pngs']
+  set :png_width, CFG['png_width']
+  set :png_height, CFG['png_height']
+  set :png_font, CFG['png_font']
   set :interest_threshold, CFG['interest_threshold']
   set :kiosk_timeout, CFG['kiosk_timeout']
   set :selfschedule_delay, CFG['selfschedule_delay']
@@ -192,9 +197,8 @@ post '/grid' do
   }
   DB[:schedules].insert(data)
 
-  if(settings.generate_pdfs) then
-    generate_pdf params[:proposal_id]
-  end
+  generate_pdf(params[:proposal_id]) if settings.generate_pdfs
+  generate_png(params[:proposal_id], settings) if settings.generate_pngs
 
   queue_emails_when_scheduled(params[:proposal_id])
   session.delete :scheduling_token
@@ -205,9 +209,8 @@ end
 get '/proposals/:id/print' do
   require_logged_in
 
-  if(settings.generate_pdfs) then
-    generate_pdf params[:id]
-  end
+  generate_pdf(params[:id]) if settings.generate_pdfs
+  generate_png(params[:id], settings) if settings.generate_pngs
 
   redirect "/proposals/#{params[:id]}"
 end

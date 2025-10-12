@@ -1,10 +1,10 @@
-- Complete output system (once defined)
 - Test mailgun email sending (once creds are available)
-
+- Finalize label format and write bom-labeld to spool labels
 
 BUGS
 - PDF generation fails if non-ASCII characters are involved, due to needing
   external fonts.
+- PNG generation fails if non-ASCII characters are involved (they are shown as blank)
 
 
 "nice to haves"

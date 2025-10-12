@@ -19,8 +19,8 @@
       %li= "#{interest[:name]}"
     %li
       %a{href: "/proposals/#{@proposal[:id]}/interest"} Register Interest
-  - if is_logged_in? and settings.generate_pdfs and not @proposal.schedule_dataset.empty?
-    %a.btn.btn-primary{href: "/proposals/#{@proposal[:id]}/print"} Re-print Schedule Page
+  - if is_logged_in? and (settings.generate_pdfs or settings.generate_pngs) and not @proposal.schedule_dataset.empty?
+    %a.btn.btn-primary{href: "/proposals/#{@proposal[:id]}/print"} Re-print Schedule Ticket 
   - if is_logged_in? and not @proposal.schedule_dataset.empty?
     %button.btn.btn-danger{type: :button, 'data-bs-toggle' => 'modal', 'data-bs-target' => '#unscheduleModal'} Un-schedule Session
 
