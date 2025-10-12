@@ -13,6 +13,11 @@ selfschedule_delay: 15
 
 generate_pdfs: false
 
+generate_pngs: true
+png_width: 2400
+png_height: 696
+png_font: 'label.ttf'
+
 email_hold: false
 email_to_domain_filter:
   - 'sen.cx'
