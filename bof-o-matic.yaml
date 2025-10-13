@@ -1,6 +1,7 @@
 ---
 conference_name: "Example Conference"
 base_url: "http://bof-o-matic.sen.cx"
+use_short_urls: true
 
 conference_starts: '2025-11-07 16:00'
 conference_ends: '2025-11-09 16:00'

@@ -22,6 +22,7 @@ configure do
 
   set :conference_name, CFG['conference_name']
   set :base_url, CFG['base_url']
+  set :use_short_urls, CFG['use_short_urls']
   set :conference_start_time, Time.parse(CFG['conference_starts'])
   set :conference_end_time, Time.parse(CFG['conference_ends'])
   set :slot_length, CFG['slot_length']
@@ -112,7 +113,13 @@ end
 
 get '/proposals/:id' do
   @proposal = Proposal[params[:id]]
+  return "No such proposal found." unless @proposal
   haml :proposal
+end
+
+get %r{/(?<id>\d+)} do
+  raise Sinatra::NotFound unless settings.use_short_urls
+  redirect "/proposals/#{params['captures'].first}"
 end
 
 # for un-scheduling a BoF
