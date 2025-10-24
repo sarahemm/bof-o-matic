@@ -73,8 +73,17 @@ while true do
     EOF
     begin
       smtp = Net::SMTP.new(cfg['smtp_server'], cfg['smtp_port'])
-      smtp.start('bof-o-matic')
-      smtp.send_message(email_body, cfg['email_from'], message[:to_address]);
+      smtp.enable_tls if cfg.include? 'smtp_tls' and cfg['smtp_tls']
+      from_email = cfg['email_from']
+      # if the from email is something like "Example Conference <con@example.com>"
+      # the envelope should just have what's in the <>, so extract that
+      from_email = from_email.split(/[<>]/)[1] if from_email.include? '<'
+      if(cfg.include? 'smtp_username') then
+        smtp.start('bof-o-magic', cfg['smtp_username'], cfg['smtp_password'], cfg['smtp_authmethod'].to_sym)
+      else
+        smtp.start('bof-o-matic')
+      end
+      smtp.send_message(email_body, from_email, message[:to_address]);
     rescue Net::SMTPFatalError => e
       logger.warn "Fatal error sending message #{message[:id]}: #{e.replace("\n", " ")}, marking as ERROR"
       message.status = 'ERROR'

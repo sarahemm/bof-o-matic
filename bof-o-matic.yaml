@@ -23,8 +23,12 @@ email_hold: false
 email_to_domain_filter:
   - 'sen.cx'
 keep_sent_mail: true
-smtp_server: 'mail.sen.cx'
-smtp_port: 25
+smtp_server: 'smtp.mailgun.org'
+smtp_port: 465
+smtp_tls: true
+smtp_username: 'bof-o-matic@example.org'
+smtp_password: 'PASSWORD HERE'
+smtp_authmethod: 'login' # plain, login, or cram_md5
 email_from: 'Example Conference BoFs <bofomatic@sen.cx>'
 
 sms_twilio_sid: 'SID GOES HERE'
