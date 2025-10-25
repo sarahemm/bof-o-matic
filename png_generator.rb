@@ -140,3 +140,38 @@ def generate_png(proposal_id, settings)
   img.write("png-spool/#{Time.now.to_i.to_s}-proposal#{proposal[:id]}.png")
 end
 
+# generate a PNG label in the spool directory for a given cancellation
+# needs to be called before the cancellation is processed, so that it still has access to room/time!
+def generate_cancellation_png(proposal_id, settings)
+  proposal = Proposal
+    .association_join(schedule: :room)
+    .select(Sequel[:proposals][:id], :title, :description, :submitted_by, :start_time, :room_name, Sequel[:room][:id].as(:room_id))
+    .where(Sequel[:proposals][:id] => proposal_id).first
+
+  img = Magick::Image.new(settings.png_width, settings.png_height)
+  draw = Magick::Draw.new
+  draw.interline_spacing = 20
+  draw.font = settings.png_font
+  draw.pointsize = 1024
+
+  # draw the cancelled title in the lower left
+  desc = fit_text("Removed from schedule: #{proposal[:title]}", settings.png_font, settings.png_width*0.02, settings.png_width/2)
+  img.annotate(draw, settings.png_width, settings.png_height-25, 25, 0, desc) do
+    draw.gravity = Magick::SouthWestGravity
+    draw.pointsize = settings.png_width*0.02
+    draw.fill = "#000000#"
+    draw.font_weight = Magick::BoldWeight
+  end
+
+  # draw the time it should be added to in the lower right
+  # along with the URL
+  time = "#{proposal[:start_time].strftime("%a %H:%M")} - #{proposal[:room_name]}"
+  img.annotate(draw, settings.png_width, settings.png_height-25, 25, 0, time) do
+    draw.gravity = Magick::SouthEastGravity
+    draw.pointsize = settings.png_width*0.03
+    draw.fill = "#000000#"
+    draw.font_weight = Magick::BoldWeight
+  end
+
+  img.write("png-spool/#{Time.now.to_i.to_s}-proposal#{proposal[:id]}-cancel.png")
+end

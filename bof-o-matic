@@ -126,6 +126,8 @@ end
 delete '/schedules/:id' do
   require_logged_in
 
+  generate_cancellation_png(params[:proposal_id], settings)
+
   Schedule[params[:id]].destroy
 
   queue_emails_when_unscheduled params[:proposal_id], session[:user]
