@@ -1,5 +1,38 @@
 require 'rmagick'
 
+def split_title(title, chunks)
+  # we can't split into more chunks than there are spaces, so clamp the chunks to that number
+  chunks = title.count(' ') + 1 if title.count(' ') < chunks
+
+  return title if chunks == 0  # we can't split at all if we have no spaces
+
+  ideal_chunk_len = title.length/chunks
+  split_positions = []
+  (1..chunks-1).each do |chunk_nbr|
+      ideal_split_pos = ideal_chunk_len * chunk_nbr
+      # search forward from the split for the first space
+      forward_space = title[ideal_split_pos..-1].index(' ') + ideal_split_pos if title[ideal_split_pos..-1].index(' ')
+      # and search backwards to see if there's a closer one there
+      backward_space = title[0..ideal_split_pos].rindex(' ') if title[0..ideal_split_pos].rindex(' ')
+      nearest_space = nil
+      if(forward_space == nil) then
+        nearest_space = backward_space
+      elsif(backward_space == nil) then
+        nearest_space = forward_space
+      else
+        nearest_space = (forward_space - ideal_split_pos > ideal_split_pos - backward_space) ? backward_space : forward_space
+      end
+      split_positions << nearest_space
+  end
+
+  split_title = +title
+  split_positions.each do |split_pos|
+      split_title[split_pos] = "\n"
+  end
+
+  return split_title
+end
+
 def text_fit?(text, font, pointsize, width)
   tmp_image = Magick::Image.new(width, 500)
   drawing = Magick::Draw.new
@@ -11,7 +44,6 @@ def text_fit?(text, font, pointsize, width)
     txt.font_weight = Magick::BoldWeight
   }
   metrics = drawing.get_multiline_type_metrics(tmp_image, text)
-  pp metrics.width, width
   (metrics.width < width)
 end
 
@@ -61,16 +93,16 @@ def generate_png(proposal_id, settings)
   draw.pointsize = 1024
   size = 1024
   time = "#{proposal[:start_time].strftime("%a %H:%M")} - #{proposal[:room_name]}"
-  title = proposal[:title]
-  if(title.length > 25) then
-    # split long titles roughly in half on two lines
-    # TODO: this is inaccurate when some words are longer than others
-    halfway = title.split(' ').length/2
-    title = [title.split(' ')[0..halfway-1], "\n", title.split(' ')[halfway..-1]].join(" ")
-  end
-  desc = fit_text(proposal[:description], settings.png_font, 48, settings.png_width/2)
 
-  # figure out the largest size font that will fit in the space we have
+  title = proposal[:title]
+  if(title.length > 40) then
+    # split extra-long titles roughly in thirds
+    title = split_title(title, 3)
+  elsif(title.length > 20) then
+    # split long titles roughly in half on two lines
+    title = split_title(title, 2)
+  end
+  # figure out the largest size font that will fit in the space we have for the title
   metrics = draw.get_multiline_type_metrics(title)
   while(metrics.width > settings.png_width-50 or metrics.height > settings.png_height-100) do
     size -= 5
@@ -79,36 +111,32 @@ def generate_png(proposal_id, settings)
   end
 
   # draw the title centered near the top
-  img.annotate(draw, settings.png_width-25, settings.png_height, 0, 25, title) do
+  img.annotate(draw, settings.png_width-25, settings.png_height*0.8, 0, 25, title) do
     draw.gravity = Magick::NorthGravity
     draw.fill = "#000000#"
     draw.font_weight = Magick::BoldWeight
   end
 
   # draw the description in the lower left
+  desc = fit_text(proposal[:description], settings.png_font, settings.png_width*0.02, settings.png_width/2)
   img.annotate(draw, settings.png_width, settings.png_height-25, 25, 0, desc) do
     draw.gravity = Magick::SouthWestGravity
-    draw.pointsize = 48
+    draw.pointsize = settings.png_width*0.02
     draw.fill = "#000000#"
     draw.font_weight = Magick::BoldWeight
   end
   
   # draw the time it should be added to in the lower right
+  # along with the URL
+  url = "#{settings.base_url}/#{settings.use_short_urls ? '' : 'proposals/'}#{proposal_id}"
+  time = "#{url}\n#{time}"
   img.annotate(draw, settings.png_width, settings.png_height-25, 25, 0, time) do
     draw.gravity = Magick::SouthEastGravity
-    draw.pointsize = 64
+    draw.pointsize = settings.png_width*0.03
     draw.fill = "#000000#"
     draw.font_weight = Magick::BoldWeight
   end
 
-  # draw the proposal ID in the upper right
-  img.annotate(draw, settings.png_width-25, settings.png_height, 0, 25, proposal[:id].to_s) do
-    draw.gravity = Magick::NorthEastGravity
-    draw.pointsize = 24
-    draw.fill = "#000000#"
-  end
-
-  #img.format = "png"
   img.write("png-spool/#{Time.now.to_i.to_s}-proposal#{proposal[:id]}.png")
 end
 
