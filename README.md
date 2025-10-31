@@ -7,5 +7,5 @@ To get up and running:
 1. Set up the DB schema: rake db:migrate
 1. Download a current copy of Bootstrap into public/assets/css/bootstrap.bundle.min.css and public/assets/js/bootstrap.js.
 1. Download a current copy of jQuery into public/assets/js/jquery.min.js
-1. Insert at least one user into the 'schedulers' table
-1. Run the app!
+1. Create the initial scheduler user: rake db:add\_sysop\_user
+1. Run the app! The initial login is username 'sysop' and password 'correct horse bof changeme'.

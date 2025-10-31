@@ -18,5 +18,8 @@ namespace :db do
   task :fill do
     system("sqlite3 bof-o-matic.sqlite3 -init add-test-data.sql .quit")
   end
+
+  task :add_sysop_user
+    system("sqlite3 bof-o-matic.sqlite3 -init add-sysop-user.sql .quit")
 end
 
