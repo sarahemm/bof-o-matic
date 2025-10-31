@@ -6,6 +6,12 @@ require 'erb'
 require 'cgi'
 require 'add_to_calendar'
 
+# trigger a mail or SMS run immediately, rather than waiting for the next poll
+def trigger_run(type)
+  daemon_pid = `pidof -sx bom-#{type}d`.to_i
+  Process.kill("SIGUSR1", daemon_pid) if daemon_pid > 0
+end
+
 def queue_emails_when_scheduled(proposal_id)
   proposal = Proposal
     .association_join(schedule: :room)
@@ -92,6 +98,9 @@ def queue_emails_when_scheduled(proposal_id)
       text.save
     end
   end
+
+  trigger_run 'mail'
+  trigger_run 'sms'
 end
 
 def queue_emails_when_unscheduled(proposal_id, unscheduled_by)
@@ -145,6 +154,9 @@ def queue_emails_when_unscheduled(proposal_id, unscheduled_by)
       text.save
     end
   end
+  
+  trigger_run 'mail'
+  trigger_run 'sms'
 end
 
 def queue_interest_email_to_proposer(proposal_id, selfschedule_delay, base_url)
@@ -185,7 +197,9 @@ def queue_interest_email_to_proposer(proposal_id, selfschedule_delay, base_url)
     )
     text.save
   end
-
+  
+  trigger_run 'mail'
+  trigger_run 'sms'
 end
 
 def queue_interest_emails_to_schedulers(proposal_id)
@@ -213,6 +227,9 @@ def queue_interest_emails_to_schedulers(proposal_id)
     )
     text.save
   end
+  
+  trigger_run 'mail'
+  trigger_run 'sms'
 end
 
 def queue_reminder_emails(proposal_id, reminder_minutes)
@@ -246,7 +263,6 @@ def queue_reminder_emails(proposal_id, reminder_minutes)
     text.save
   end
 
-
   # queue up mail for each interested person, too
   interest_tmpl = ERB.new(File.read('email-templates/reminder-to_interests.erb'))
   interests.each do |interest|
@@ -270,6 +286,9 @@ def queue_reminder_emails(proposal_id, reminder_minutes)
       text.save
     end
   end
+  
+  trigger_run 'mail'
+  trigger_run 'sms'
 end
 
 def format_multipart(parts)

@@ -15,7 +15,7 @@ selfschedule_delay: 15
 generate_pdfs: false
 
 generate_pngs: true
-png_width: 2400
+png_width: 1650
 png_height: 696
 png_font: 'label.ttf'
 

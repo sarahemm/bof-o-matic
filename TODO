@@ -1,12 +1,5 @@
-- Test mailgun email sending (once creds are available)
-- Finalize label format
-- Spool PNGs for unschedules too, so that they can be put over the cancelled event on the grid
-
 BUGS
 - PDF generation fails if non-ASCII characters are involved, due to needing
   external fonts.
 - PNG generation fails if non-ASCII characters are involved (they are shown as blank)
 
-
-"nice to haves"
-- Signal bom-maild and bom-smsd to do runs immediately once something is queued, to speed up queue running without constant polling
