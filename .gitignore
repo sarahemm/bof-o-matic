@@ -4,8 +4,8 @@
 add-test-data.sql
 *bootstrap*
 jquery.min.js
-pdf-spool/
-png-spool/
+pdf-spool/*
+png-spool/*
 /.config
 /coverage/
 /InstalledFiles
