@@ -45,8 +45,10 @@ function validateProposal() {
   phone_alertbox = document.getElementById('phone-alert');
   if(email.value == "" && phone.value == "") {
     alertbox.innerHTML = "<div class='alert alert-danger'>You must provide either an email address or a phone number.</div>";
+    rv = false
   } else if(phone.value != "" && phone.value.length < 8) {
     phone_alertbox.innerHTML = "<div class='alert alert-danger'>Phone numbers must be at least 8 digits long.</div>";
+    rv = false
   } else if(email.value != "" && email.value.indexOf('@') < 0 || email.value.indexOf(' ') >= 0) {
     alertbox.innerHTML = "<div class='alert alert-danger'>Your email address must contain an @ symbol and must not contain any spaces.</div>";
     alertbox.focus();
