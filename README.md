@@ -9,3 +9,8 @@ To get up and running:
 1. Download a current copy of jQuery into public/assets/js/jquery.min.js
 1. Create the initial scheduler user: rake db:add\_sysop\_user
 1. Run the app! The initial login is username 'sysop' and password 'correct horse bof changeme'.
+1. You'll probably want to run the following as well, which are daemons by default but can be run with -f to foreground them:
+   * bom-reminderd: Send reminders X minutes before the session starts.
+   * bom-scheduled: Send "ready for scheduling" notices to admins if sessions aren't self-scheduled in time.
+   * bom-maild: Send queued emails via SMTP.
+   * bom-smsd: Send queued text messages via Twilio.
