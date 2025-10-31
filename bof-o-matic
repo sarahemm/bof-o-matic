@@ -37,12 +37,12 @@ configure do
 end
 
 helpers do
-  def nav_link(uri:, text:)
+  def nav_link(uri: '', text: '', extra_class: '')
     haml_tag :li, class: 'nav-item'
     if(request.path_info == uri) then
-      haml_tag :a, text, href: uri, class: 'nav-link active', 'aria-current': :page
+      haml_tag :a, text, href: uri, class: "nav-link active #{extra_class}", 'aria-current': :page
     else
-      haml_tag :a, text, href: uri, class: 'nav-link'
+      haml_tag :a, text, href: uri, class: "nav-link #{extra_class}"
     end
   end
 end
