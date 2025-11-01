@@ -5,13 +5,11 @@ Kiosk Mode is intended for kiosks, and after a timeout period will log out any l
 - if @kiosk_mode then
   = "Kiosk mode is currently ON for this device, redirecting to #{@kiosk_url}"
   %form{method: 'post'}
-    %input{ type: 'hidden', name: 'csrf_token', value: csrf_token }
     %input{name: 'kiosk', type: 'hidden', value: 'off'}
     %button.btn.btn-primary.mb-3{type: 'submit'} Turn OFF Kiosk Mode for this device
 - else
   Kiosk mode is currently OFF for this device
   %form{method: 'post'}
-    %input{ type: 'hidden', name: 'csrf_token', value: csrf_token }
     %input{name: 'kiosk', type: 'hidden', value: 'on'}
     %div.mb-3
       %label.form-label{for: 'url'} Page to redirect to:

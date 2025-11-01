@@ -1,0 +1,25 @@
+services:
+  bof-o-matic:
+    container_name: bof-o-matic
+    image: bof-o-matic:latest
+    restart: unless-stopped
+    expose:
+      - 4590
+    networks:
+      - nginx-proxy
+  
+  proxy:
+    container_name: proxy
+    image: nginx:alpine
+    ports:
+      - 80:80
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    networks:
+      - nginx-proxy
+    depends_on:
+      - bof-o-matic
+
+networks:
+  nginx-proxy:
+    driver: bridge

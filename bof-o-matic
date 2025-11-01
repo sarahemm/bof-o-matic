@@ -18,6 +18,8 @@ CFG = YAML.load(File.read("bof-o-matic.yaml"))
 require './pdf_generator.rb' if CFG['generate_pdfs']
 require './png_generator.rb' if CFG['generate_pngs']
 
+use Rack::Protection
+
 configure do
   set :host_authorization, { permitted_hosts: [] }
 
@@ -46,8 +48,6 @@ set :session_secret, CFG['session_secret']
 set :port, 4590
 set :method_override, true
 
-use Rack::Protection
-
 helpers do
   def nav_link(uri: '', text: '', extra_class: '')
     haml_tag :li, class: 'nav-item'
@@ -57,9 +57,7 @@ helpers do
       haml_tag :a, text, href: uri, class: "nav-link #{extra_class}"
     end
   end
-  def csrf_token
-    Rack::Protection::Csrf.token(session)
-  end
+
 end
 
 

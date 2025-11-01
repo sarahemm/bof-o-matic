@@ -1,7 +1,6 @@
 %h2 Scheduler '#{@scheduler[:username]}'
 
 %form{method: 'post'}
-  %input{ type: 'hidden', name: 'csrf_token', value: csrf_token }
   %div.mb-3
     %label.form-label{for: 'email'} Email (optional):
     %input.form-control#email{name: 'email', value: @scheduler[:email]}

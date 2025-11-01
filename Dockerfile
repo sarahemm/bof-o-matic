@@ -35,8 +35,7 @@ ADD https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js
 RUN rake db:migrate
 RUN rake db:add_sysop_user
 
-# Expose the default Sinatra port
-EXPOSE 4590
+# run the damn thing
 CMD ["./run-app.sh"]
 
 
