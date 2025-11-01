@@ -19,6 +19,7 @@ require './pdf_generator.rb' if CFG['generate_pdfs']
 require './png_generator.rb' if CFG['generate_pngs']
 
 use Rack::Protection
+use Rack::Protection::EscapedParams
 
 configure do
   set :host_authorization, { permitted_hosts: [] }

@@ -29,6 +29,8 @@ COPY . .
 # copy bootstrap libraries into ./public/assets/
 ADD https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css ./public/assets/css/
 ADD https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js ./public/assets/js/
+ADD https://code.jquery.com/jquery-3.7.1.min.js ./public/assets/js/
+RUN mv ./public/assets/js/jquery-3.7.1.min.js ./public/assets/js/jquery.min.js
 
 # create the initial scheduler user
 # set up the DB
