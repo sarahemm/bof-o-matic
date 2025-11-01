@@ -1,6 +1,7 @@
 *.gem
 *.rbc
 *.sqlite3
+bof-o-matic.yaml
 add-test-data.sql
 *bootstrap*
 jquery.min.js
