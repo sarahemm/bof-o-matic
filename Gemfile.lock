@@ -1,0 +1,38 @@
+GEM
+remote: https://rubygems.org/
+specs:
+add_to_calendar (0.9.0)
+bcrypt (3.1.20)
+prawn (2.4.0)
+pdf-core (>= 0.9.0)
+ttfunk (>= 1.7.0)
+pdf-core (0.11.0)
+rack (3.1.5)
+rack-protection (4.0.0)
+rack
+rmagick (5.3.0)
+sequel (5.83.0)
+sinatra (4.0.0)
+rack (>= 2.2.8, < 4)
+rack-protection (>= 4.0.0, < 5)
+tilt (>= 2.1.0, < 3)
+sqlite3 (2.0.2)
+native_lib_builder
+tilt (2.3.0)
+ttfunk (1.7.1)
+native_lib_builder (1.0.6)
+
+PLATFORMS
+linux
+
+DEPENDENCIES
+add_to_calendar
+bcrypt
+prawn
+rmagick
+sequel
+sinatra
+sqlite3
+
+BUNDLED WITH
+2.5.9
