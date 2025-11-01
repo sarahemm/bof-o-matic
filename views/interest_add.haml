@@ -1,5 +1,6 @@
 %h2= "Register Interest for #{@proposal[:title]}"
 %form#interestform{method: 'post', onsubmit: 'return validateInterest();'}
+  %input{ type: 'hidden', name: 'csrf_token', value: csrf_token }
   %div#name-alert{tabindex: -1}
   %div.mb-3
     %label.form-label{for: 'name'} Name:

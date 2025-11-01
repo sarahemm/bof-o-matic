@@ -22,6 +22,7 @@
   .modal-dialog{role: :document}
     .modal-content
       %form{method: :post}
+        %input{ type: 'hidden', name: 'csrf_token', value: csrf_token }
         .modal-header
           %h5.modal-title
             Add New Scheduler

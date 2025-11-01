@@ -1,5 +1,6 @@
 %h2= "Submit BoF Proposal"
 %form#proposalform{method: 'post', onsubmit: 'return validateProposal();'}
+  %input{ type: 'hidden', name: 'csrf_token', value: csrf_token }
   %div#name-alert{tabindex: -1}
   %div.mb-3
     %label.form-label{for: 'name'} Your Name:
