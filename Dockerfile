@@ -11,7 +11,9 @@ RUN apk add --no-cache \
     sqlite-dev \
     sqlite \
     imagemagick \
-    imagemagick-dev 
+    imagemagick-dev \
+    python3 \
+    py3-pip
 
 # Set the working directory inside the container
 WORKDIR /usr/src/app
@@ -22,6 +24,9 @@ COPY Gemfile.lock ./
 
 # Install the Ruby gems using Bundler
 RUN bundle install --jobs=$(nproc) --retry=3
+
+# Install brother_ql
+RUN pip install --upgrade --break-system-packages brother_ql
 
 # Copy in the code
 COPY . .

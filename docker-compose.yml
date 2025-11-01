@@ -3,8 +3,8 @@ services:
     container_name: bof-o-matic
     image: bof-o-matic:latest
     restart: unless-stopped
-    volumes:
-      - /dev/usb:/dev/usb
+    devices:
+     - /dev/usb/printer:/dev/usb/printer
     expose:
       - 4590
     networks:
