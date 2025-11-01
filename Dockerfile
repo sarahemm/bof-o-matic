@@ -13,7 +13,10 @@ RUN apk add --no-cache \
     imagemagick \
     imagemagick-dev \
     python3 \
-    py3-pip
+    py3-pip \
+    py3-pillow \
+    py3-future \
+    py3-pyusb \
 
 # Set the working directory inside the container
 WORKDIR /usr/src/app
@@ -26,7 +29,7 @@ COPY Gemfile.lock ./
 RUN bundle install --jobs=$(nproc) --retry=3
 
 # Install brother_ql
-RUN pip install --upgrade --break-system-packages brother_ql
+RUN pip install --upgrade --break-system-packages brother_ql_next
 
 # Copy in the code
 COPY . .
