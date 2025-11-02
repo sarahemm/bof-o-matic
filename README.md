@@ -18,11 +18,11 @@ To get up and running:
 
 1. Copy `bof-o-matic.yaml.example` to `bof-o-matic.yaml` and do any required config changes.
 1. Run `bundle install` to install all ruby dependencies
-1. Run `pip install brother_ql` to install the python library for the printers
-1. Download a current copy of Bootstrap into 
+1. Run `pip install brother_ql_next` to install the python library for the printers
+1. Download a current copy of Bootstrap into
    - `public/assets/css/bootstrap.bundle.min.css`
    - `public/assets/js/bootstrap.bunfle.min.js`
-1. Download a current copy of jQuery into 
+1. Download a current copy of jQuery into
    - `public/assets/js/jquery.min.js`
 1. Set up the DB schema: `rake db:migrate`
 1. Create the initial scheduler user: `rake db:add\_sysop\_user`
