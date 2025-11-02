@@ -10,18 +10,26 @@ class QlLabelPrinter
   attr_reader :port, :model, :media_id
 
   def initialize()
-    printers = `brother_ql discover 2>/dev/null`
-    unless(printers.include? 'usb') then
-      puts "No printers found, exiting."
-      Kernel.exit 1
-    end
-    @port = printers.split('_')[0] # trim off the high-ascii garbage that 'discover' for some reason outputs after the port
-    printer_status = `brother_ql --printer #{@port} status 2>/dev/null`
-    printer_status.each_line do |line|
-      if(line.include? 'Model') then
-        @model = line.split(':')[1].strip
-      elsif(line.include? 'Media') then
-        @media_id = line.split(':')[2].strip.split(')')[0]
+    # different rules for docker container, gonna cheat for now
+    if File.exist?('./dockerenv')
+      puts "We're in a docker container, acting accordingly"
+      @port = 'file:///dev/usb/lp0'
+      @model = 'QL-710W'
+      @media_id = '62'
+    else
+      printers = `brother_ql discover 2>/dev/null`
+      unless(printers.include? 'usb') then
+        puts "No printers found, exiting."
+        Kernel.exit 1
+      end
+      @port = printers.split('_')[0] # trim off the high-ascii garbage that 'discover' for some reason outputs after the port
+      printer_status = `brother_ql --printer #{@port} status 2>/dev/null`
+      printer_status.each_line do |line|
+        if(line.include? 'Model') then
+          @model = line.split(':')[1].strip
+        elsif(line.include? 'Media') then
+          @media_id = line.split(':')[2].strip.split(')')[0]
+        end
       end
     end
   end

@@ -15,8 +15,7 @@ RUN apk add --no-cache \
     python3 \
     py3-pip \
     py3-pillow \
-    py3-future \
-    py3-pyusb \
+    py3-future 
 
 # Set the working directory inside the container
 WORKDIR /usr/src/app
