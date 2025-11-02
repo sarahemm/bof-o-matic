@@ -12,7 +12,7 @@ class QlLabelPrinter
   def initialize()
     # different rules for docker container, gonna cheat for now
     if File.exist?('./dockerenv')
-      puts "We're in a docker container, acting accordingly"
+      logger.info "We're in a docker container, acting accordingly"
       @port = 'file:///dev/usb/lp0'
       @model = 'QL-710W'
       @media_id = '62'
