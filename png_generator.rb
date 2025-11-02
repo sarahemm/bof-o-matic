@@ -118,10 +118,10 @@ def generate_png(proposal_id, settings)
   end
 
   # draw the description in the lower left
-  desc = fit_text(proposal[:description], settings.png_font, settings.png_width*0.02, settings.png_width/2)
+  desc = fit_text(proposal[:description], settings.png_font, settings.png_width*0.04, settings.png_width/2)
   img.annotate(draw, settings.png_width, settings.png_height-25, 25, 0, desc) do
     draw.gravity = Magick::SouthWestGravity
-    draw.pointsize = settings.png_width*0.02
+    draw.pointsize = settings.png_width*0.04
     draw.fill = "#000000#"
     draw.font_weight = Magick::BoldWeight
   end
@@ -155,10 +155,10 @@ def generate_cancellation_png(proposal_id, settings)
   draw.pointsize = 1024
 
   # draw the cancelled title in the lower left
-  desc = fit_text("Removed from schedule: #{proposal[:title]}", settings.png_font, settings.png_width*0.02, settings.png_width/2)
+  desc = fit_text("Removed from schedule: #{proposal[:title]}", settings.png_font, settings.png_width*0.04, settings.png_width/2)
   img.annotate(draw, settings.png_width, settings.png_height-25, 25, 0, desc) do
     draw.gravity = Magick::SouthWestGravity
-    draw.pointsize = settings.png_width*0.02
+    draw.pointsize = settings.png_width*0.04
     draw.fill = "#000000#"
     draw.font_weight = Magick::BoldWeight
   end
@@ -168,7 +168,7 @@ def generate_cancellation_png(proposal_id, settings)
   time = "#{proposal[:start_time].strftime("%a %H:%M")} - #{proposal[:room_name]}"
   img.annotate(draw, settings.png_width, settings.png_height-25, 25, 0, time) do
     draw.gravity = Magick::SouthEastGravity
-    draw.pointsize = settings.png_width*0.03
+    draw.pointsize = settings.png_width*0.04
     draw.fill = "#000000#"
     draw.font_weight = Magick::BoldWeight
   end
