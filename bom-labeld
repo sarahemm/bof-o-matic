@@ -6,13 +6,15 @@ require 'rb-inotify'
 
 SPOOL_DIR="png-spool"
 
+DOCKER=File.exist?('/.dockerenv')
+
 class QlLabelPrinter
   attr_reader :port, :model, :media_id
 
   def initialize()
     # different rules for docker container, gonna cheat for now
-    if File.exist?('./dockerenv')
-      logger.info "We're in a docker container, acting accordingly"
+    if (DOCKER)
+      puts "We're in a docker container, acting accordingly"
       @port = 'file:///dev/usb/lp0'
       @model = 'QL-710W'
       @media_id = '62'
