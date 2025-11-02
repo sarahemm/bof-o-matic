@@ -5,6 +5,9 @@ services:
     restart: unless-stopped
     devices:
      - /dev/usb/lp0:/dev/usb/lp0
+    volumes:
+     - ./bof-o-matic.sqlite3:/usr/src/app/bof-o-matic.sqlite3
+     - ./bof-o-matic.yaml:/usr/src/app/bof-o-matic.yaml:ro
     expose:
       - 4590
     networks:
