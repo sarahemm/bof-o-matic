@@ -8,6 +8,7 @@ require 'sinatra'
 require 'sequel'
 require 'bcrypt'
 require 'net/http'
+require 'rack/protection'
 require './email_builder.rb'
 
 Sequel.default_timezone = :local
@@ -16,6 +17,9 @@ CFG = YAML.load(File.read("bof-o-matic.yaml"))
 
 require './pdf_generator.rb' if CFG['generate_pdfs']
 require './png_generator.rb' if CFG['generate_pngs']
+
+use Rack::Protection
+use Rack::Protection::EscapedParams
 
 configure do
   set :host_authorization, { permitted_hosts: [] }
@@ -36,6 +40,15 @@ configure do
   set :selfschedule_delay, CFG['selfschedule_delay']
 end
 
+
+# bring in all the Sequel models for talking to the DB
+require './bom_models.rb'
+
+enable :sessions
+set :session_secret, CFG['session_secret']
+set :port, 4590
+set :method_override, true
+
 helpers do
   def nav_link(uri: '', text: '', extra_class: '')
     haml_tag :li, class: 'nav-item'
@@ -45,15 +58,9 @@ helpers do
       haml_tag :a, text, href: uri, class: "nav-link #{extra_class}"
     end
   end
+
 end
 
-# bring in all the Sequel models for talking to the DB
-require './bom_models.rb'
-
-enable :sessions
-set :session_secret, CFG['session_secret']
-set :port, 4590
-set :method_override, true
 
 def require_logged_in
   redirect '/login' unless session[:user]

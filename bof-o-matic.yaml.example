@@ -8,7 +8,7 @@ conference_ends: '2025-11-09 16:00'
 slot_length: 60
 
 reminder_mins_before: 10
-interest_threshold: 3
+interest_threshold: 8
 
 selfschedule_delay: 15
 
