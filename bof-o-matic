@@ -142,6 +142,19 @@ delete '/schedules/:id' do
   redirect "/"
 end
 
+# for destroying a BoF
+delete '/proposals/:id' do
+  require_logged_in
+
+  Proposal[params[:id]].interest_dataset.each do |interest|
+    interest.destroy
+  end
+  Proposal[params[:id]].destroy
+
+  redirect "/"
+end
+
+
 get '/proposals/:id/interest' do
   @proposal = Proposal[params[:id]]
   haml :interest_add

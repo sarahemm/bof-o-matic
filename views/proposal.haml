@@ -23,6 +23,9 @@
     %a.btn.btn-primary{href: "/proposals/#{@proposal[:id]}/print"} Re-print Schedule Ticket 
   - if is_logged_in? and not @proposal.schedule_dataset.empty?
     %button.btn.btn-danger{type: :button, 'data-bs-toggle' => 'modal', 'data-bs-target' => '#unscheduleModal'} Un-schedule Session
+    %button.btn.btn-secondary{type: :button} Destroy Session (must unschedule first)
+  - if is_logged_in? and @proposal.schedule_dataset.empty?
+    %button.btn.btn-danger{type: :button, 'data-bs-toggle' => 'modal', 'data-bs-target' => '#destroyModal'} Destroy Session
 
 - if is_logged_in? and not @proposal.schedule_dataset.empty?
   .modal.fade#unscheduleModal{tabIndex: -1, role: :dialog}
@@ -43,3 +46,20 @@
             %button.btn.btn-danger{type: :submit}
               Un-schedule Session
 
+- if is_logged_in? and @proposal.schedule_dataset.empty?
+  .modal.fade#destroyModal{tabIndex: -1, role: :dialog}
+    .modal-dialog{role: :document}
+      .modal-content
+        %form{method: :post, action: "/proposals/#{@proposal[:id]}"}
+          .modal-header
+            %h5.modal-title#DestroyModalLabel
+              %div Destroy Session
+            %button.btn-close{type: :button, 'data-bs-dismiss' => 'modal'}
+          .modal-body
+            %p Are you sure you want to destroy this session? All traces of it will be removed from the system, and no notifications will be sent.
+            %input{type: :hidden, name: '_method', value: 'delete'}
+          .modal-footer
+            %button.btn.btn-secondary{type: :button, 'data-bs-dismiss' => 'modal'}
+              Cancel
+            %button.btn.btn-danger{type: :submit}
+              Destroy Session
