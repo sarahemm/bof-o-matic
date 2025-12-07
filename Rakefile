@@ -19,7 +19,8 @@ namespace :db do
     system("sqlite3 bof-o-matic.sqlite3 -init add-test-data.sql .quit")
   end
 
-  task :add_sysop_user
+  task :add_sysop_user do
     system("sqlite3 bof-o-matic.sqlite3 -init add-sysop-user.sql .quit")
+  end
 end
 
