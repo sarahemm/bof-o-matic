@@ -43,7 +43,7 @@ require './bom_models.rb'
 
 # bring in the classes that extend the models, these have to come after bom_models
 require './bom_pdf.rb' if CFG['generate_pdfs']
-require './png_generator.rb' if CFG['generate_pngs']
+require './bom_png.rb' if CFG['generate_pngs']
 
 enable :sessions
 set :session_secret, CFG['session_secret']
@@ -134,7 +134,7 @@ end
 delete '/schedules/:id' do
   require_logged_in
 
-  generate_cancellation_png(params[:proposal_id], settings)
+  Proposal[params[:proposal_id]].to_cancel_label_png settings: settings, filename: "png-spool/#{Time.now.to_i.to_s}-proposal#{params[:proposal_id]}-cancel.png" if settings.generate_pngs
 
   Schedule[params[:id]].destroy
 
@@ -227,8 +227,8 @@ post '/grid' do
   }
   DB[:schedules].insert(data)
 
-  Proposal[params[:id]].to_pdf filename: "pdf-spool/#{Time.now.to_i.to_s}-proposal#{params[:id]}.pdf" if settings.generate_pdfs
-  generate_png(params[:proposal_id], settings) if settings.generate_pngs
+  Proposal[params[:proposal_id]].to_pdf filename: "pdf-spool/#{Time.now.to_i.to_s}-proposal#{params[:id]}.pdf" if settings.generate_pdfs
+  Proposal[params[:proposal_id]].to_label_png settings: settings, filename: "png-spool/#{Time.now.to_i.to_s}-proposal#{params[:proposal_id]}.png" if settings.generate_pngs
 
   queue_emails_when_scheduled(params[:proposal_id])
   session.delete :scheduling_token
@@ -240,7 +240,7 @@ get '/proposals/:id/print' do
   require_logged_in
 
   Proposal[params[:id]].to_pdf filename: "pdf-spool/#{Time.now.to_i.to_s}-proposal#{params[:id]}.pdf" if settings.generate_pdfs
-  generate_png(params[:id], settings) if settings.generate_pngs
+  Proposal[params[:id]].to_label_png settings: settings, filename: "png-spool/#{Time.now.to_i.to_s}-proposal#{params[:proposal_id]}.png" if settings.generate_pngs
 
   redirect "/proposals/#{params[:id]}"
 end
