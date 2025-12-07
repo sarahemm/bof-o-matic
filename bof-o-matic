@@ -15,9 +15,6 @@ Sequel.default_timezone = :local
 DB = Sequel.connect("sqlite://#{Dir.pwd}/bof-o-matic.sqlite3")
 CFG = YAML.load(File.read("bof-o-matic.yaml"))
 
-require './pdf_generator.rb' if CFG['generate_pdfs']
-require './png_generator.rb' if CFG['generate_pngs']
-
 use Rack::Protection
 use Rack::Protection::EscapedParams
 
@@ -43,6 +40,10 @@ end
 
 # bring in all the Sequel models for talking to the DB
 require './bom_models.rb'
+
+# bring in the classes that extend the models, these have to come after bom_models
+require './bom_pdf.rb' if CFG['generate_pdfs']
+require './png_generator.rb' if CFG['generate_pngs']
 
 enable :sessions
 set :session_secret, CFG['session_secret']
@@ -226,7 +227,7 @@ post '/grid' do
   }
   DB[:schedules].insert(data)
 
-  generate_pdf(params[:proposal_id]) if settings.generate_pdfs
+  Proposal[params[:id]].to_pdf filename: "pdf-spool/#{Time.now.to_i.to_s}-proposal#{params[:id]}.pdf" if settings.generate_pdfs
   generate_png(params[:proposal_id], settings) if settings.generate_pngs
 
   queue_emails_when_scheduled(params[:proposal_id])
@@ -238,7 +239,7 @@ end
 get '/proposals/:id/print' do
   require_logged_in
 
-  generate_pdf(params[:id]) if settings.generate_pdfs
+  Proposal[params[:id]].to_pdf filename: "pdf-spool/#{Time.now.to_i.to_s}-proposal#{params[:id]}.pdf" if settings.generate_pdfs
   generate_png(params[:id], settings) if settings.generate_pngs
 
   redirect "/proposals/#{params[:id]}"
