@@ -2,6 +2,12 @@
 # TODO: there's also a lot of repetitive code, this could use refactoring
 #       to DRY it out a bunch
 
+# TODO: this also needs to be part of the Ruby-ification OO effort, but needs
+#       more of a think-through before starting that. Ideally there would be
+#       some way for different things to "hook" things like "is now scheduled"
+#       and perform activities like email/SMS sending. Going to think about
+#       the best way to do this more before moving forward.
+
 require 'erb'
 require 'cgi'
 require 'add_to_calendar'
