@@ -16,10 +16,10 @@ class Proposal
     title = self[:title]
     if(title.length > 40) then
       # split extra-long titles roughly in thirds
-      title = split_title(title, 3)
+      title = BomPngHelpers::split_title(title, 3)
     elsif(title.length > 20) then
       # split long titles roughly in half on two lines
-      title = split_title(title, 2)
+      title = BomPngHelpers::split_title(title, 2)
     end
     # figure out the largest size font that will fit in the space we have for the title
     metrics = draw.get_multiline_type_metrics(title)
@@ -37,7 +37,7 @@ class Proposal
     end
 
     # draw the description in the lower left
-    desc = fit_text(self[:description], settings.png_font, settings.png_width*0.04, settings.png_width/2)
+    desc = BomPngHelpers::fit_text(self[:description], settings.png_font, settings.png_width*0.04, settings.png_width/2)
     img.annotate(draw, settings.png_width, settings.png_height-25, 25, 0, desc) do
       draw.gravity = Magick::SouthWestGravity
       draw.pointsize = settings.png_width*0.04
@@ -69,7 +69,7 @@ class Proposal
     draw.pointsize = 1024
 
     # draw the cancelled title in the lower left
-    desc = fit_text("Removed from schedule: #{self[:title]}", settings.png_font, settings.png_width*0.04, settings.png_width/2)
+    desc = BomPngHelpers::fit_text("Removed from schedule: #{self[:title]}", settings.png_font, settings.png_width*0.04, settings.png_width/2)
     img.annotate(draw, settings.png_width, settings.png_height-25, 25, 0, desc) do
       draw.gravity = Magick::SouthWestGravity
       draw.pointsize = settings.png_width*0.04
@@ -89,11 +89,10 @@ class Proposal
 
     img.write filename
   end
+end
 
-  # TODO: this stuff could go in a separate 'helper' class or something, seems weird to pollute the Proposal class with this
-  private
-  
-  def split_title(title, chunks)
+class BomPngHelpers
+  def self.split_title(title, chunks)
     # we can't split into more chunks than there are spaces, so clamp the chunks to that number
     chunks = title.count(' ') + 1 if title.count(' ') < chunks
 
@@ -126,7 +125,36 @@ class Proposal
     return split_title
   end
 
-  def text_fits?(text, font, pointsize, width)
+  def self.fit_text(text, font, pointsize, width)
+    separator = ' '
+    text_block = ''
+
+    if not text_fits?(text, font, pointsize, width) and text.include? separator
+      word_idx = 0
+      text.split(separator).each do |word|
+        # build the proposed next line, including a separator if required
+        tmp_block = text_block + (word_idx != 0 ? separator : '') + word
+
+        if text_fits?(tmp_block, font, pointsize, width)
+          # the proposed text fits, add it
+          text_block += separator unless word_idx == 0
+          text_block += word
+        else
+          # this line is full, bump down to the next one then add the next word
+          text_block +=  '\n' unless word_idx == 0
+          text_block += word
+        end
+        word_idx += 1
+      end
+      text = text_block
+    end
+
+    text
+  end
+
+  private
+
+  def self.text_fits?(text, font, pointsize, width)
     tmp_image = Magick::Image.new(width, 500)
     drawing = Magick::Draw.new
     drawing.annotate(tmp_image, 0, 0, 0, 0, text) { |txt|
@@ -138,37 +166,5 @@ class Proposal
     }
     metrics = drawing.get_multiline_type_metrics(tmp_image, text)
     (metrics.width < width)
-  end
-
-  # TODO: this could be cleaned up a bunch
-  def fit_text(text, font, pointsize, width)
-    separator = ' '
-    line = ''
-  
-    if not text_fits?(text, font, pointsize, width) and text.include? separator
-      i = 0
-      text.split(separator).each do |word|
-        if i == 0
-          tmp_line = line + word
-        else
-          tmp_line = line + separator + word
-        end
-
-        if text_fits?(tmp_line, font, pointsize, width)
-          unless i == 0
-            line += separator
-          end
-          line += word
-        else
-          unless i == 0
-            line +=  '\n'
-          end
-          line += word
-        end
-        i += 1
-      end
-      text = line
-    end
-    text
   end
 end
