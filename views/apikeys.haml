@@ -1,0 +1,63 @@
+%h2 API Keys
+%table.table.table-striped
+  %thead
+    %tr
+      %th{scope: 'col'} API Key
+      %th{scope: 'col'} Description
+      %th{scope: 'col'} Controls
+  %tbody
+    - @apikeys.each do |apikey|
+      %tr
+        %td
+          %a{href: "/apikey/#{apikey.id}"}= apikey.masked_key
+        %td
+          =apikey.description
+        %td
+          %button.btn.btn-primary{type: :button, 'data-bs-toggle' => 'modal', 'data-bs-target' => '#deleteModal', onClick: "readyDeleteApiKey('#{apikey.description}', '#{apikey.id}');"}
+            Delete Key
+
+%button.btn.btn-primary{type: :button, 'data-bs-toggle' => 'modal', 'data-bs-target' => '#addModal'} Generate New Key
+
+.modal.fade#addModal{tabIndex: -1, role: :dialog}
+  .modal-dialog{role: :document}
+    .modal-content
+      %form{method: :post}
+        .modal-header
+          %h5.modal-title
+            Generate API Key
+          %button.btn-close{type: :button, 'data-bs-dismiss' => 'modal'}
+        .modal-body
+          %input{type: :hidden, name: 'action', value: 'add'}
+          %label{for: "description"}
+            Description:
+          %input.form-control#desc{name: 'desc', required: true}
+          %label{for: "access_level"}
+            Access Level:
+          %select#access_level{name: 'access_level'}
+            %option{value: '0'} View Only
+            %option{value: '5'} Public Access (add proposals, interest, etc.)
+            %option{value: '10'} Scheduler Access
+        .modal-footer
+          %button.btn.btn-secondary{type: :button, 'data-bs-dismiss' => 'modal'}
+            Cancel
+          %button.btn.btn-primary{type: :submit}
+            Generate New Key
+
+.modal.fade#deleteModal{tabIndex: -1, role: :dialog}
+  .modal-dialog{role: :document}
+    .modal-content
+      %form{method: :post}
+        .modal-header
+          %h5.modal-title#deleteTitle
+            %div Delete API Key
+          %button.btn-close{type: :button, 'data-bs-dismiss' => 'modal'}
+        .modal-body
+          %input{type: :hidden, name: 'action', value: 'delete'}
+          %input#keyId{type: :hidden, name: 'id'}
+          %p Are you sure you want to delete this key?
+        .modal-footer
+          %button.btn.btn-secondary{type: :button, 'data-bs-dismiss' => 'modal'}
+            Cancel
+          %button.btn.btn-danger{type: :submit}
+            Delete API Key
+

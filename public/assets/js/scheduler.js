@@ -95,3 +95,8 @@ function displaySchedulerNotes() {
   }
   $('#schedulernotes').text('Notes from proposer: ' + notes);
 }
+
+function readyDeleteApiKey(description, id) {
+  document.getElementById('deleteTitle').innerText = "Delete API Key '" + description + "'";
+  document.getElementById('keyId').value = id;
+}

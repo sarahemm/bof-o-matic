@@ -26,3 +26,25 @@ end
 
 class Text < Sequel::Model
 end
+
+class ApiKey < Sequel::Model
+  def masked_key
+    masked_key = self.key.dup
+    masked_key[0..-6] = '*' * (masked_key.length-5)
+
+    masked_key
+  end
+
+  def access_level_text
+    case self.access_level
+      when 0
+        "View Only"
+      when 5
+        "Public Access"
+      when 10
+        "Scheduler Access"
+      else
+        "Unknown/Invalid"
+    end
+  end
+end

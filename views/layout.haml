@@ -56,6 +56,8 @@
                   %li
                     %a.dropdown-item{href: '/schedulers'} Scheduler Manager
                   %li
+                    %a.dropdown-item{href: '/apikeys'} API Keys
+                  %li
                     %a.dropdown-item{href: '/password'} Change Password
             - if is_logged_in?
               -nav_link uri: '/logout', text: 'Log Out'

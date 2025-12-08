@@ -324,6 +324,38 @@ post '/scheduler/:id' do
   redirect '/schedulers'
 end
 
+get '/apikeys' do
+  require_logged_in
+
+  @apikeys = ApiKey.all
+
+  haml :apikeys
+end
+
+post '/apikeys' do
+  require_logged_in
+
+  if(params[:action] == 'delete') then
+    ApiKey[params[:id]].destroy
+  elsif(params[:action] == 'add') then
+    apikey = ApiKey.new(
+      key: [*('a'..'z'),*('A'..'Z'),*('0'..'9')].shuffle[0,31].join,
+      access_level: params[:access_level],
+      description: params[:desc],
+      issued_by: session[:user]
+    )
+    apikey.save
+  end
+
+  redirect '/apikeys'
+end
+
+get '/apikey/:id' do
+  @apikey = ApiKey[params[:id]]
+
+  haml :apikey
+end
+
 get '/mails' do
   require_logged_in
 
