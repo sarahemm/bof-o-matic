@@ -1,8 +1,10 @@
 TODO for bof-o-matic 2026
 - Refactor things to be overall Ruby-er, now that there's breathing time
+-- Cleaned up PNG and PDF generation, need to think about how to clean up email/SMS better before taking action
 - Figure out what's going on with haml since it's unmaintained and notes say to use Rails built-in haml support instead, but we aren't a Rails app
 - Use jQuery and Bootstrap gems rather than having to manually pull those in
 - API so other interfaces could be added (CLI, bof-o-matic/X, gopher, packet radio BBS, fax-back, SSTV, etc.)
+-- Working on this!
 - Ability to block off specific time slots (meals, plenary sessions, etc.) from scheduling
 - More mobile-friendly layout
 - Ability for schedulers to merge BoFs if two people submit essentially the same things

@@ -7,6 +7,7 @@ require 'time'
 require 'sinatra'
 require 'sequel'
 require 'bcrypt'
+require 'json'
 require 'net/http'
 require 'rack/protection'
 require './email_builder.rb'
@@ -90,6 +91,8 @@ end
 get '/'  do
   redirect '/proposals'
 end
+
+# TODO: there are way too many routes now, these should be split up into separate files
 
 get '/proposals' do
   @proposals = Proposal.association_left_join(:interest)
@@ -485,3 +488,45 @@ post '/password' do
   end
 end
 
+
+### API ROUTES ###
+
+error 401 do
+  'invalid API key or access level not sufficient for request'
+end
+
+def api_access_level(access_level)
+  key = ApiKey.where(key: params[:api_key]).first
+
+  key and key.level_is_at_least access_level
+end
+
+def require_api_access(access_level)
+  error 401 unless api_access_level access_level
+end
+
+get '/api/v1/proposals' do
+  require_api_access :view_only
+
+  proposals = {}
+
+  Proposal.each do |proposal|
+    proposals[proposal[:id]] = {
+      title: proposal[:title],
+      description: proposal[:description],
+      submitted_by: proposal[:submitted_by],
+      submitted_at: proposal[:submitted_at]
+    }
+    # schedulers get some extra fields too
+    if(api_access_level(:scheduler)) then
+      proposals[proposal[:id]][:submitter_email] = proposal[:submitter_email]
+      proposals[proposal[:id]][:submitter_phone] = proposal[:submitter_phone]
+      proposals[proposal[:id]][:scheduler_notes] = proposal[:scheduler_notes]
+      proposals[proposal[:id]][:scheduling_token] = proposal[:scheduling_token]
+      proposals[proposal[:id]][:sent_to_schedulers] = proposal[:sent_to_schedulers]
+    end
+  end
+
+  content_type :json
+  proposals.to_json
+end

@@ -47,4 +47,12 @@ class ApiKey < Sequel::Model
         "Unknown/Invalid"
     end
   end
+
+  def level_is_at_least(required_level)
+    required_level = 0 if required_level == :view_only
+    required_level = 5 if required_level == :public
+    required_level = 10 if required_level == :scheduler
+
+    self.access_level >= required_level
+  end
 end
