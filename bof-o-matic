@@ -517,13 +517,31 @@ get '/api/v1/proposals' do
       submitted_by: proposal[:submitted_by],
       submitted_at: proposal[:submitted_at]
     }
+
+    # if it's scheduled already, add some info about that
+    if(proposal.schedule) then
+      proposals[proposal[:id]].merge!({
+        scheduled: true,
+        start_time: proposal.schedule.start_time,
+        room: proposal.schedule.room.room_name
+      })
+    else
+      proposals[proposal[:id]][:scheduled] = false
+    end
+
     # schedulers get some extra fields too
     if(api_access_level(:scheduler)) then
-      proposals[proposal[:id]][:submitter_email] = proposal[:submitter_email]
-      proposals[proposal[:id]][:submitter_phone] = proposal[:submitter_phone]
-      proposals[proposal[:id]][:scheduler_notes] = proposal[:scheduler_notes]
-      proposals[proposal[:id]][:scheduling_token] = proposal[:scheduling_token]
-      proposals[proposal[:id]][:sent_to_schedulers] = proposal[:sent_to_schedulers]
+      proposals[proposal[:id]].merge!({
+        submitter_email: proposal[:submitter_email],
+        submitter_phone: proposal[:submitter_phone],
+        scheduler_notes: proposal[:scheduler_notes],
+        scheduling_token: proposal[:scheduling_token],
+        sent_to_schedulers: proposal[:sent_to_schedulers]
+      })
+      if(proposal.schedule) then
+        proposals[proposal[:id]][:scheduled_at] = proposal.schedule[:scheduled_at]
+        proposals[proposal[:id]][:scheduled_by] = proposal.schedule[:scheduled_by]
+      end
     end
   end
 
