@@ -5,6 +5,45 @@ end
 class Proposal < Sequel::Model
   one_to_many :interest
   one_to_one :schedule
+
+  def to_hash(include_scheduler_fields: false)
+    out = {}
+
+    out = {
+      title: self.title,
+      description: self.description,
+      submitted_by: self.submitted_by,
+      submitted_at: self.submitted_at
+    }
+
+    # if it's scheduled already, add some info about that
+    if(self.schedule) then
+      out.merge!({
+        scheduled: true,
+        start_time: self.schedule.start_time,
+        room: self.schedule.room.room_name
+      })
+    else
+      out[:scheduled] = false
+    end
+
+    # schedulers get some extra fields too
+    if(include_scheduler_fields) then
+      out.merge!({
+        submitter_email: self.submitter_email,
+        submitter_phone: self.submitter_phone,
+        scheduler_notes: self.scheduler_notes,
+        scheduling_token: self.scheduling_token,
+        sent_to_schedulers: self.sent_to_schedulers
+      })
+      if(self.schedule) then
+        out[:scheduled_at] = self.schedule.scheduled_at
+        out[:scheduled_by] = self.schedule.scheduled_by
+      end
+    end
+
+    out
+  end
 end
 
 class Interest < Sequel::Model

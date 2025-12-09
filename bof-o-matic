@@ -511,40 +511,17 @@ get '/api/v1/proposals' do
   proposals = {}
 
   Proposal.each do |proposal|
-    proposals[proposal[:id]] = {
-      title: proposal[:title],
-      description: proposal[:description],
-      submitted_by: proposal[:submitted_by],
-      submitted_at: proposal[:submitted_at]
-    }
-
-    # if it's scheduled already, add some info about that
-    if(proposal.schedule) then
-      proposals[proposal[:id]].merge!({
-        scheduled: true,
-        start_time: proposal.schedule.start_time,
-        room: proposal.schedule.room.room_name
-      })
-    else
-      proposals[proposal[:id]][:scheduled] = false
-    end
-
-    # schedulers get some extra fields too
-    if(api_access_level(:scheduler)) then
-      proposals[proposal[:id]].merge!({
-        submitter_email: proposal[:submitter_email],
-        submitter_phone: proposal[:submitter_phone],
-        scheduler_notes: proposal[:scheduler_notes],
-        scheduling_token: proposal[:scheduling_token],
-        sent_to_schedulers: proposal[:sent_to_schedulers]
-      })
-      if(proposal.schedule) then
-        proposals[proposal[:id]][:scheduled_at] = proposal.schedule[:scheduled_at]
-        proposals[proposal[:id]][:scheduled_by] = proposal.schedule[:scheduled_by]
-      end
-    end
+    proposals[proposal[:id]] = proposal.to_hash(include_scheduler_fields: api_access_level(:scheduler))
   end
 
   content_type :json
   proposals.to_json
+end
+
+
+get '/api/v1/proposals/:id' do
+  require_api_access :view_only
+
+  content_type :json
+  Proposal[params[:id]].to_hash(include_scheduler_fields: api_access_level(:scheduler)).to_json
 end
