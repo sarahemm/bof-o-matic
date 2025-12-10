@@ -505,6 +505,10 @@ def require_api_access(access_level)
   error 401 unless api_access_level access_level
 end
 
+before '/api/*' do
+  content_type :json
+end
+
 get '/api/v1/proposals' do
   require_api_access :view_only
 
@@ -514,21 +518,17 @@ get '/api/v1/proposals' do
     proposals[proposal[:id]] = proposal.to_hash(include_scheduler_fields: api_access_level(:scheduler))
   end
 
-  content_type :json
   proposals.to_json
 end
 
 get '/api/v1/proposals/:id' do
   require_api_access :view_only
 
-  content_type :json
   Proposal[params[:id]].to_hash(include_scheduler_fields: api_access_level(:scheduler)).to_json
 end
 
 get '/api/v1/rooms' do
   require_api_access :scheduler
-
-  content_type :json
 
   # output all the rooms, with the room IDs as the keys
   Room.all.map {|room| [room[:id], room.to_hash.except(:id)]}.to_h.to_json
@@ -537,8 +537,6 @@ end
 get '/api/v1/mails' do
   require_api_access :scheduler
 
-  content_type :json
-
   # output all the mails, with the mail IDs as the keys
   Mail.all.map {|mail| [mail[:id], mail.to_hash.except(:id)]}.to_h.to_json
 end
@@ -546,10 +544,7 @@ end
 get '/api/v1/texts' do
   require_api_access :scheduler
 
-  content_type :json
-
   # output all the texts, with the text IDs as the keys
   Text.all.map {|text| [text[:id], text.to_hash.except(:id)]}.to_h.to_json
 end
-
 
