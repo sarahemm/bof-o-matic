@@ -60,7 +60,6 @@ helpers do
       haml_tag :a, text, href: uri, class: "nav-link #{extra_class}"
     end
   end
-
 end
 
 
@@ -492,13 +491,17 @@ end
 ### API ROUTES ###
 
 error 401 do
+  content_type :text
   'invalid API key or access level not sufficient for request'
 end
 
 def api_access_level(access_level)
-  key = ApiKey.where(key: params[:api_key]).first
+  auth_header = request.env['HTTP_AUTHORIZATION']
+  return false unless auth_header and auth_header.start_with? 'Bearer '
+  key = auth_header.split(' ')[1]
+  apikey = ApiKey.where(key: key).first
 
-  key and key.level_is_at_least access_level
+  apikey and apikey.level_is_at_least access_level
 end
 
 def require_api_access(access_level)
