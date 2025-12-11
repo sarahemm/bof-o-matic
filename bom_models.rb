@@ -16,6 +16,8 @@ class Proposal < Sequel::Model
       submitted_at: self.submitted_at
     }
 
+    out[:interest] = self.interest.map {|i| [i[:id], i.to_hash.except(:id, :proposal_id)]}.to_h
+
     # if it's scheduled already, add some info about that
     if(self.schedule) then
       out.merge!({
@@ -48,6 +50,25 @@ end
 
 class Interest < Sequel::Model
   many_to_one :proposal
+
+  def to_hash(include_scheduler_fields: false)
+    out = {}
+
+    out = {
+      proposal_id: self.proposal_id,
+      name: self.name,
+      submitted_at: self.submitted_at
+    }
+
+    if(include_scheduler_fields) then
+      out.merge!({
+        email: self.email,
+        phone: self.phone,
+      })
+    end
+
+    out
+  end
 end
 
 class Schedule < Sequel::Model
