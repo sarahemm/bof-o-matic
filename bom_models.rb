@@ -10,13 +10,12 @@ class Proposal < Sequel::Model
     out = {}
 
     out = {
+      id: self.id,
       title: self.title,
       description: self.description,
       submitted_by: self.submitted_by,
       submitted_at: self.submitted_at
     }
-
-    out[:interest] = self.interest.map {|i| [i[:id], i.to_hash.except(:id, :proposal_id)]}.to_h
 
     # if it's scheduled already, add some info about that
     if(self.schedule) then
@@ -55,7 +54,7 @@ class Interest < Sequel::Model
     out = {}
 
     out = {
-      proposal_id: self.proposal_id,
+      id: self.id,
       name: self.name,
       submitted_at: self.submitted_at
     }
