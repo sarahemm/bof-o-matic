@@ -496,12 +496,30 @@ error 401 do
 end
 
 def api_access_level(access_level)
-  auth_header = request.env['HTTP_AUTHORIZATION']
-  return false unless auth_header and auth_header.start_with? 'Bearer '
-  key = auth_header.split(' ')[1]
-  apikey = ApiKey.where(key: key).first
+  # we don't want to hit the DB every time the access level has to be checked, if they're using Basic auth
+  return :scheduler if session[:user]
 
-  apikey and apikey.level_is_at_least access_level
+  auth_header = request.env['HTTP_AUTHORIZATION']
+  return nil unless auth_header
+
+  key = auth_header.split(' ')[1]
+  if(auth_header.start_with? 'Bearer ') then
+    # authenticate the user using an API token
+    apikey = ApiKey.where(key: key).first
+    return (apikey and apikey.level_is_at_least access_level)
+  elsif(auth_header.start_with? 'Basic') then
+    # authenticate the user using username/password
+    username, password = Base64.decode64(key).split(':')
+    # TODO: this somehow takes ~0.25s which seems excessive
+    user = Scheduler.where(username: username).first
+    if user and BCrypt::Password.new(user.pwhash) == password then
+      session[:user] = username
+      # anyone with a username and password is a scheduler, so return that
+      return :scheduler
+    end
+  end
+
+  return nil
 end
 
 def require_api_access(access_level)
