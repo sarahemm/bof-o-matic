@@ -14,6 +14,7 @@ Work Underway
 - API so other interfaces could be added (CLI, bof-o-matic/X, gopher, packet radio BBS, fax-back, SSTV, etc.)
 
 BUGS
+- Self-scheduling email to proposer gets sent to NULL if the proposer didn't enter an email
 - PDF generation fails if non-ASCII characters are involved, due to needing
   external fonts.
 - PNG generation fails if non-ASCII characters are involved (they are shown as blank)
