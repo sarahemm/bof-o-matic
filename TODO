@@ -10,7 +10,6 @@ TODO for bof-o-matic 2026
 - Complete the TUI interface for use on a VT-320 at the conference
 
 Work Underway
-- Ability for schedulers to merge BoFs if two people submit essentially the same things
 - API so other interfaces could be added (CLI, bof-o-matic/X, gopher, packet radio BBS, fax-back, SSTV, etc.)
 
 BUGS
