@@ -124,12 +124,81 @@ end
 get '/proposals/:id' do
   @proposal = Proposal[params[:id]]
   return "No such proposal found." unless @proposal
+
+  if is_logged_in? then
+    @unscheduled_proposals = Proposal.association_left_join(:interest)
+      .association_left_join(:schedule)
+      .select(Sequel[:proposals][:id], :title, :description, :submitted_by, :name, :scheduler_notes)
+      .where(start_time: nil)
+      .select_more{Sequel.as(count(:name), :count)}
+      .group(:title)
+  end
+
   haml :proposal
 end
 
 get %r{/(?<id>\d+)} do
   raise Sinatra::NotFound unless settings.use_short_urls
   redirect "/proposals/#{params['captures'].first}"
+end
+
+# for collecting info to merge a different BoF into this one
+get '/proposals/:id/merge' do
+  require_logged_in
+
+  @proposal = Proposal[params[:id]]
+  @other_proposal = Proposal[params[:other_proposal_id]]
+
+  haml :proposal_merge
+end
+
+# actually do the BoF merge
+post '/proposals/:id/merge' do
+  require_logged_in
+
+  proposal = Proposal[params[:id]]
+  other_proposal = Proposal[params[:other_proposal_id]]
+  new_title = params[:title]
+  new_desc = params[:description]
+
+  # update the title and description, if they asked for any changes
+  if(proposal.title != new_title) then
+    proposal.title = new_title
+    proposal.save
+  end
+
+  if(proposal.description != new_desc) then
+    proposal.description = new_desc
+    proposal.save
+  end
+
+  queue_emails_when_merged params[:id], params[:other_proposal_id], session[:user]
+
+  # redirect anyone interested in the old one to the new one instead
+  other_proposal.interest_dataset.each do |interest|
+    interest.proposal_id = proposal.id
+    interest.save
+  end
+
+  # make the merge source's proposer an interested party in the merge target instead
+  data = {
+    :proposal_id => other_proposal.id,
+    :name => other_proposal.submitted_by,
+    :email => other_proposal.submitter_email,
+    :phone => other_proposal.submitter_phone,
+  }
+  data[:submitted_at] = Time.now
+  DB[:interests].insert(data)
+
+  # if these new interested parties put the merge source over the threshold, set it
+  # up for self-scheduling now
+  if(Interest.where(proposal_id: params[:id]).count >= settings.interest_threshold and not proposal.scheduling_token) then
+    queue_interest_email_to_proposer(params[:id], settings.selfschedule_delay, settings.base_url)
+  end
+
+  other_proposal.destroy
+
+  redirect "/proposals/#{proposal.id}"
 end
 
 # for un-scheduling a BoF

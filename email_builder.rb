@@ -165,6 +165,125 @@ def queue_emails_when_unscheduled(proposal_id, unscheduled_by)
   trigger_run 'sms'
 end
 
+# TODO: this works but could use refactoring, it's hard to read/understand
+def queue_emails_when_merged(proposal_id, merge_source_id, merged_by)
+  merge_target = Proposal[proposal_id]
+  merge_source = Proposal[merge_source_id]
+
+  interests = Interest.where(proposal_id: merge_source_id)
+
+  # notify whoever proposed the merge source about the merge
+  if(merge_source[:submitter_email]) then
+    subject = "Your BoF '#{merge_source[:title]}' has been merged with another session"
+    proposer_tmpl = ERB.new(File.read('email-templates/merged-to_proposer.erb'))
+    mail = Mail.new(
+      to_address: merge_source[:submitter_email],
+      subject: subject,
+      body: proposer_tmpl.result(binding)
+    )
+    mail.save
+  end
+
+  if(merge_source[:submitter_phone]) then
+    text_tmpl = ERB.new(File.read('sms-templates/merged-to_proposer.erb'))
+
+    text = Text.new(
+      to_phone: merge_source[:submitter_phone],
+      body: text_tmpl.result(binding)
+    )
+    text.save
+  end
+
+  # notify anyone who was interested in the merge source about the merge
+  interest_tmpl = ERB.new(File.read('email-templates/merged-to_interests.erb'))
+  interests.each do |interest|
+    if(interest[:email] and interest[:email] != '') then
+      subject = "The BoF '#{merge_source[:title]}' has been merged with another session"
+
+      mail = Mail.new(
+        to_address: interest[:email],
+        subject: subject,
+        body: interest_tmpl.result(binding)
+      )
+      mail.save
+    end
+
+    if(interest[:phone] and interest[:phone] != '') then
+      text_tmpl = ERB.new(File.read('sms-templates/merged-to_interests.erb'))
+      text = Text.new(
+        to_phone: interest[:phone],
+        body: text_tmpl.result(binding)
+      )
+      text.save
+    end
+  end
+
+  # TODO - this is copy/paste of part of the "when scheduled" logic, this should be
+  #        cleaned up as part of the "message bus" redesign for this module
+  proposal = Proposal
+    .association_join(schedule: :room)
+    .select(Sequel[:proposals][:id], :title, :description, :submitted_by, :submitter_email, :submitter_phone, :scheduled_by, :start_time, :room_name, Sequel[:room][:id].as(:room_id))
+    .where(Sequel[:proposals][:id] => proposal_id).first
+
+  if(not proposal) then
+    # not scheduled yet, nothing else to do
+    #trigger_run 'mail'
+    #trigger_run 'sms'
+    return
+  end
+
+  calendar_links = AddToCalendar::URLs.new(
+    # TODO: add end time too
+    start_datetime: proposal[:start_time],
+    title: proposal[:title],
+    location: proposal[:room_name],
+    # TODO: this should live in a config file, do as part of timezone work
+    timezone: 'America/Los_Angeles'
+  )
+
+  # add_to_calendar can only generate a data link, not raw ics, so we unescape it
+  # and reformat it a bit to get a file-formatted one. kind of a dirty hack but
+  # it avoids needing yet another dependency just for this one thing.
+  ics_file = CGI.unescape(calendar_links.ical_url.split(',', 2)[1])
+
+  interested = interests.map(:name)
+  interest_tmpl = ERB.new(File.read('email-templates/scheduled-to_interests.erb'))
+  interest_html_tmpl = ERB.new(File.read('email-templates/scheduled-to_interests.html.erb'))
+  # add the HTML part, reformat links, etc.
+  body = format_multipart([
+    {type: 'text/plain', body: interest_tmpl.result(binding)},
+    {type: 'text/html', body: interest_html_tmpl.result(binding)},
+    {type: 'text/calendar', filename: "bof-#{proposal_id}.ics", body: ics_file}
+  ])
+
+  interests.each do |interest|
+    if(interest[:email] and interest[:email] != '') then
+      subject = "BoF '#{merge_target[:title]}' has been scheduled!"
+
+      mail = Mail.new(
+        to_address: interest[:email],
+        subject: subject,
+        body: body
+      )
+      mail.save
+    end
+
+    if(interest[:phone] and interest[:phone] != '') then
+      text_tmpl = ERB.new(File.read('sms-templates/scheduled-to_interests.erb'))
+      text = Text.new(
+        to_phone: interest[:phone],
+        body: text_tmpl.result(binding)
+      )
+      text.save
+    end
+  end
+
+  trigger_run 'mail'
+  trigger_run 'sms'
+end
+
+# TODO: this does more than just email and SMS, we should move some of this out of
+#       this module
 def queue_interest_email_to_proposer(proposal_id, selfschedule_delay, base_url)
   proposal = Proposal[proposal_id]
 

@@ -21,6 +21,8 @@
       %a{href: "/proposals/#{@proposal[:id]}/interest"} Register Interest
   - if is_logged_in? and (settings.generate_pdfs or settings.generate_pngs) and not @proposal.schedule_dataset.empty?
     %a.btn.btn-primary{href: "/proposals/#{@proposal[:id]}/print"} Re-print Schedule Ticket 
+  - if is_logged_in? and (@proposal.schedule_dataset.empty? or start_time > Time.now)
+    %button.btn.btn-warning{type: :button, 'data-bs-toggle' => 'modal', 'data-bs-target' => '#mergeModal'} Merge Session
   - if is_logged_in? and not @proposal.schedule_dataset.empty?
     %button.btn.btn-danger{type: :button, 'data-bs-toggle' => 'modal', 'data-bs-target' => '#unscheduleModal'} Un-schedule Session
     %button.btn.btn-secondary{type: :button} Destroy Session (must unschedule first)
@@ -63,3 +65,25 @@
               Cancel
             %button.btn.btn-danger{type: :submit}
               Destroy Session
+
+- if is_logged_in?
+  .modal.fade#mergeModal{tabIndex: -1, role: :dialog}
+    .modal-dialog{role: :document}
+      .modal-content
+        %form.needs-validation{method: :get, action: "/proposals/#{@proposal[:id]}/merge"}
+          .modal-header
+            %h5.modal-title#MergeModalLabel
+              %div Merge Sesson
+            %button.btn-close{type: :button, 'data-bs-dismiss' => 'modal'}
+          .modal-body
+            %p This will delete the other session (which must not be scheduled yet) and notify the proposer and interested parties that it has been merged with this session.
+            %label.form-label{for: 'other_session'} Other Session:
+            %select#unscheduledproposals.form-control.session{name: 'other_proposal_id'}
+              - @unscheduled_proposals.each do |proposal|
+                - next if proposal.id == @proposal[:id]
+                %option{value: proposal[:id], 'data-notes': proposal[:scheduler_notes]}= "#{proposal[:title]} - Proposed by #{proposal[:submitted_by]} - #{proposal[:count]} interested"
+          .modal-footer
+            %button.btn.btn-secondary{type: :button, 'data-bs-dismiss' => 'modal'}
+              Cancel
+            %button.btn.btn-primary{type: :submit}
+              Merge Sessions
