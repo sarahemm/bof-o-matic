@@ -427,6 +427,28 @@ get '/apikey/:id' do
   haml :apikey
 end
 
+get '/blockedtimes' do
+  require_logged_in
+
+  @blockedtimes = BlockedTime.all
+
+  haml :blockedtimes
+end
+
+post '/blockedtimes' do
+  require_logged_in
+
+  if(params[:action] == 'add') then
+    blockedtime = BlockedTime.new(description: params[:desc], start_time: params[:start_time], duration: params[:duration], created_by: session[:user], created_at: Time.now)
+    blockedtime.save
+  elsif(params[:action] == 'delete') then
+    BlockedTime[params[:id]].destroy
+  end
+
+  redirect '/blockedtimes'
+end
+
+
 get '/mails' do
   require_logged_in
 
@@ -644,3 +666,9 @@ get '/api/v1/texts' do
   Text.all.map {|text| [text[:id], text.to_hash]}.to_h.to_json
 end
 
+get '/api/v1/blockedtimes' do
+  require_api_access :scheduler
+
+  # output all the blocked times, with the block IDs as the keys
+  BlockedTime.all.map {|blockedtime| [blockedtime[:id], blockedtime.to_hash]}.to_h.to_json
+end

@@ -100,3 +100,8 @@ function readyDeleteApiKey(description, id) {
   document.getElementById('deleteTitle').innerText = "Delete API Key '" + description + "'";
   document.getElementById('keyId').value = id;
 }
+
+function readyDeleteBlockedTime(description, id) {
+  document.getElementById('deleteTitle').innerText = "Delete Blocked Time '" + description + "'";
+  document.getElementById('blockId').value = id;
+}

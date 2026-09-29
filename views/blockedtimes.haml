@@ -1,0 +1,72 @@
+%h2 Blocked Timeslots
+%table.table.table-striped
+  %thead
+    %tr
+      %th{scope: 'col'} Description
+      %th{scope: 'col'} Start Time
+      %th{scope: 'col'} Duration (mins)
+      %th{scope: 'col'} Controls
+  %tbody
+    - @blockedtimes.each do |blockedtime|
+      %tr
+        %td
+          %a{href: "/blockedtimes/#{blockedtime.id}"}= blockedtime.description
+        %td
+          =blockedtime.start_time
+        %td
+          =blockedtime.duration
+        %td
+          %button.btn.btn-primary{type: :button, 'data-bs-toggle' => 'modal', 'data-bs-target' => '#deleteModal', onClick: "readyDeleteBlockedTime('#{blockedtime.description}', '#{blockedtime.id}');"}
+            Delete Blocked Timeslot
+
+%button.btn.btn-primary{type: :button, 'data-bs-toggle' => 'modal', 'data-bs-target' => '#addModal'} Add Blocked Timeslot
+
+.modal.fade#addModal{tabIndex: -1, role: :dialog}
+  .modal-dialog{role: :document}
+    .modal-content
+      %form{method: :post}
+        .modal-header
+          %h5.modal-title
+            Add Blocked Timeslot
+          %button.btn-close{type: :button, 'data-bs-dismiss' => 'modal'}
+        .modal-body
+          %input{type: :hidden, name: 'action', value: 'add'}
+          %label{for: "description"}
+            Description:
+          %input.form-control#desc{name: 'desc', required: true}
+          %label{for: "starttime"}
+            Start Time:
+          %select#starttime{name: 'start_time'}
+            - this_time = settings.conference_start_time
+            - while(this_time < settings.conference_end_time)
+              %option{value: this_time}= "#{this_time.strftime('%A %H:%M')}"
+              - this_time += 60 * settings.slot_length
+          %label{for: "duration"}
+            Duration:
+          %input.form-control#duration{name: 'duration', required: true, type: :number, step: 15}
+            
+
+        .modal-footer
+          %button.btn.btn-secondary{type: :button, 'data-bs-dismiss' => 'modal'}
+            Cancel
+          %button.btn.btn-primary{type: :submit}
+            Add Blocked Timeslot
+
+.modal.fade#deleteModal{tabIndex: -1, role: :dialog}
+  .modal-dialog{role: :document}
+    .modal-content
+      %form{method: :post}
+        .modal-header
+          %h5.modal-title#deleteTitle
+            %div Delete Blocked Timeslot
+          %button.btn-close{type: :button, 'data-bs-dismiss' => 'modal'}
+        .modal-body
+          %input{type: :hidden, name: 'action', value: 'delete'}
+          %input#blockId{type: :hidden, name: 'id'}
+          %p Are you sure you want to delete this blocked timeslot?
+        .modal-footer
+          %button.btn.btn-secondary{type: :button, 'data-bs-dismiss' => 'modal'}
+            Cancel
+          %button.btn.btn-danger{type: :submit}
+            Delete Blocked Time
+

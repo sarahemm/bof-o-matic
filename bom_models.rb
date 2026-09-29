@@ -115,3 +115,6 @@ class ApiKey < Sequel::Model
     self.access_level >= required_level
   end
 end
+
+class BlockedTime < Sequel::Model
+end
