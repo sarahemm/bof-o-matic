@@ -22,6 +22,8 @@
           - this_slot_time = Time.parse("#{day.strftime("%Y-%m-%d")} #{this_slot_starts.strftime("%H:%M:%S")}")
           - if(this_slot_time < settings.conference_start_time or this_slot_time > settings.conference_end_time)
             %td.bg-danger-subtle
+          - elsif(@blocked_timeslots.include? this_slot_time)
+            %td.bg-warning-subtle= @blocked_timeslots[this_slot_time]
           - else
             - timeslot = "#{day.strftime('%Y-%m-%d')} #{this_slot_starts.strftime('%H:%M')}"
             - click_js = ""

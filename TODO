@@ -3,7 +3,6 @@ TODO for bof-o-matic 2026
 -- Cleaned up PNG and PDF generation, need to think about how to clean up email/SMS better before taking action
 - Figure out what's going on with haml since it's unmaintained and notes say to use Rails built-in haml support instead, but we aren't a Rails app
 - Use jQuery and Bootstrap gems rather than having to manually pull those in
-- Ability to block off specific time slots (meals, plenary sessions, etc.) from scheduling
 - More mobile-friendly layout
 - Print 'proposal' labels so that there can be a physical list of proposals at the conference
 - Consider an interstitial "other BoFs look like what you're proposing, are you sure you want to propose this one?" or something, to reduce duplicates

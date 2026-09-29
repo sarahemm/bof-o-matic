@@ -256,6 +256,17 @@ get '/grid' do
     .select_more{Sequel.as(count(:name), :count)}
     .group(:title)
   
+  @blocked_timeslots = {}
+  # turn the list of start times and durations into a full list of timeslots that are blocked
+  BlockedTime.all.each do |blockedtime|
+    end_time = blockedtime.start_time + blockedtime.duration * 60 - 1
+    timeslot = blockedtime.start_time
+    while timeslot < end_time do
+      @blocked_timeslots[timeslot] = blockedtime.description
+      timeslot += settings.slot_length*60
+    end
+  end
+
   if is_logged_in? then
     @unscheduled_proposals = Proposal.association_left_join(:interest)
       .association_left_join(:schedule)
