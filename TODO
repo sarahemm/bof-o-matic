@@ -4,7 +4,6 @@ TODO for bof-o-matic 2026
 - Figure out what's going on with haml since it's unmaintained and notes say to use Rails built-in haml support instead, but we aren't a Rails app
 - Use jQuery and Bootstrap gems rather than having to manually pull those in
 - More mobile-friendly layout
-- Print 'proposal' labels so that there can be a physical list of proposals at the conference
 - Consider an interstitial "other BoFs look like what you're proposing, are you sure you want to propose this one?" or something, to reduce duplicates
 - Complete the TUI interface for use on a VT-320 at the conference
 

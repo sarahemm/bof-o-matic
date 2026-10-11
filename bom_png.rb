@@ -11,7 +11,8 @@ class Proposal
     draw.font = settings.png_font
     draw.pointsize = 1024
     size = 1024
-    time = "#{self.schedule[:start_time].strftime("%a %H:%M")} - #{self.schedule.room[:room_name]}"
+    time = "PROPOSAL"
+    time = "#{self.schedule[:start_time].strftime("%a %H:%M")} - #{self.schedule.room[:room_name]}" if self.schedule
 
     title = self[:title]
     if(title.length > 40) then

@@ -36,6 +36,7 @@ configure do
   set :interest_threshold, CFG['interest_threshold']
   set :kiosk_timeout, CFG['kiosk_timeout']
   set :selfschedule_delay, CFG['selfschedule_delay']
+  set :proposal_labels, CFG['proposal_labels']
 end
 
 
@@ -117,6 +118,9 @@ post '/proposals/new' do
     :scheduler_notes => params[:notes]
   }
   new_id = DB[:proposals].insert(data)
+
+  Proposal[new_id].to_pdf filename: "pdf-spool/#{Time.now.to_i.to_s}-proposal#{new_id}.pdf" if settings.generate_pdfs and settings.proposal_labels
+  Proposal[new_id].to_label_png settings: settings, filename: "png-spool/#{Time.now.to_i.to_s}-proposal#{new_id}.png" if settings.generate_pngs and settings.proposal_labels
 
   redirect "/proposals/#{new_id}"
 end

@@ -15,7 +15,9 @@ class Proposal
 
       # when and where
       font_size 28
-      text_box "#{proposal.schedule[:start_time].strftime("%A at %H:%M")} in #{proposal.schedule.room[:room_name]}", at: [0, 72*6.5], height: 72*1, width: 72*10, overflow: :shrink_to_fit, align: :center
+      when_where = "PROPOSAL"
+      when_where = "#{proposal.schedule[:start_time].strftime("%A at %H:%M")} in #{proposal.schedule.room[:room_name]}" if proposal.schedule
+      text_box when_where, at: [0, 72*6.5], height: 72*1, width: 72*10, overflow: :shrink_to_fit, align: :center
 
       # description
       font_size 24

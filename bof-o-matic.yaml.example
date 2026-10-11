@@ -12,6 +12,8 @@ interest_threshold: 8
 
 selfschedule_delay: 15
 
+proposal_labels: true
+
 generate_pdfs: false
 
 generate_pngs: true
