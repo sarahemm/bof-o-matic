@@ -12,6 +12,7 @@ Work Underway
 
 BUGS
 - Self-scheduling email to proposer gets sent to NULL if the proposer didn't enter an email
+- Self-scheduling only sends emails, never SMSs? I don't think this is intentional
 - PDF generation fails if non-ASCII characters are involved, due to needing
   external fonts.
 - PNG generation fails if non-ASCII characters are involved (they are shown as blank)
