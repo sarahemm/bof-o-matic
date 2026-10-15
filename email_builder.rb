@@ -18,6 +18,38 @@ def trigger_run(type)
   Process.kill("SIGUSR1", daemon_pid) if daemon_pid > 0
 end
 
+# confirm to the proposer that their proposal was received
+def queue_emails_when_proposed(proposal_id, base_url, use_short_urls)
+  proposal = Proposal[proposal_id]
+  proposal_link = use_short_urls ? "#{base_url}/#{proposal.id}" : "#{base_url}/proposals/#{proposal.id}"
+
+  if(proposal[:submitter_email] and proposal[:submitter_email] != '') then
+    subject = "Your BoF proposal '#{proposal[:title]}' has been received"
+    proposer_tmpl = ERB.new(File.read('email-templates/proposed-to_proposer.erb'))
+    mail = Mail.new(
+      to_address: proposal[:submitter_email],
+      subject: subject,
+      body: proposer_tmpl.result(binding)
+    )
+    mail.save
+  end
+
+  if(proposal[:submitter_phone] and proposal[:submitter_phone] != '') then
+    # keep the SMS to a single message, long titles get truncated
+    short_title = proposal[:title].length > 100 ? "#{proposal[:title][0, 97]}..." : proposal[:title]
+    text_tmpl = ERB.new(File.read('sms-templates/proposed-to_proposer.erb'))
+
+    text = Text.new(
+      to_phone: proposal[:submitter_phone],
+      body: text_tmpl.result(binding)
+    )
+    text.save
+  end
+
+  trigger_run 'mail'
+  trigger_run 'sms'
+end
+
 def queue_emails_when_scheduled(proposal_id)
   proposal = Proposal
     .association_join(schedule: :room)

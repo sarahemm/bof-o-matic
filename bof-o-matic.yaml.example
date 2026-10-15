@@ -14,6 +14,9 @@ selfschedule_delay: 15
 
 proposal_labels: true
 
+# send the proposer an email/SMS confirming their proposal was received
+confirm_new_proposals: true
+
 generate_pdfs: false
 
 generate_pngs: true

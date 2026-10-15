@@ -37,6 +37,7 @@ configure do
   set :kiosk_timeout, CFG['kiosk_timeout']
   set :selfschedule_delay, CFG['selfschedule_delay']
   set :proposal_labels, CFG['proposal_labels']
+  set :confirm_new_proposals, CFG['confirm_new_proposals']
 end
 
 
@@ -121,6 +122,8 @@ post '/proposals/new' do
 
   Proposal[new_id].to_pdf filename: "pdf-spool/#{Time.now.to_i.to_s}-proposal#{new_id}.pdf" if settings.generate_pdfs and settings.proposal_labels
   Proposal[new_id].to_label_png settings: settings, filename: "png-spool/#{Time.now.to_i.to_s}-proposal#{new_id}.png" if settings.generate_pngs and settings.proposal_labels
+
+  queue_emails_when_proposed(new_id, settings.base_url, settings.use_short_urls) if settings.confirm_new_proposals
 
   redirect "/proposals/#{new_id}"
 end
