@@ -109,10 +109,22 @@ get '/proposals/new' do
 end
 
 post '/proposals/new' do
+  # blank contact fields are stored as NULL so notification code can skip them
+  email = params[:email].to_s.strip
+  email = nil if email.empty?
+  phone = params[:phone].to_s.strip
+  phone = nil if phone.empty?
+
+  # need some way to reach the proposer, the client-side check can be bypassed
+  if(!email and !phone) then
+    @message = "You must provide either an email address or a phone number."
+    return haml :proposal_add
+  end
+
   data = {
     :submitted_by => params[:name],
-    :submitter_email => params[:email],
-    :submitter_phone => params[:phone],
+    :submitter_email => email,
+    :submitter_phone => phone,
     :title => params[:title],
     :description => params[:description],
     :scheduler_notes => params[:notes]
