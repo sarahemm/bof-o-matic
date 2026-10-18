@@ -11,5 +11,5 @@ Work Underway
 - API so other interfaces could be added (CLI, bof-o-matic/X, gopher, packet radio BBS, fax-back, SSTV, etc.)
 
 BUGS
-- PNG generation fails if non-ASCII characters are involved (they are shown as blank)
+- None currently outstanding
 
