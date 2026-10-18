@@ -27,7 +27,7 @@ def queue_emails_when_scheduled(proposal_id)
   interests = Interest.where(proposal_id: proposal_id)
   interested = interests.map(:name)
   
-  if(proposal[:submitter_email]) then
+  if(proposal[:submitter_email] and proposal[:submitter_email] != '') then
     subject = "Your BoF '#{proposal[:title]}' has been scheduled!"
   
     proposer_tmpl = ERB.new(File.read('email-templates/scheduled-to_proposer.erb'))
@@ -62,7 +62,7 @@ def queue_emails_when_scheduled(proposal_id)
     mail.save
   end
 
-  if(proposal[:submitter_phone]) then
+  if(proposal[:submitter_phone] and proposal[:submitter_phone] != '') then
     text_tmpl = ERB.new(File.read('sms-templates/scheduled-to_proposer.erb'))
 
     text = Text.new(
@@ -116,7 +116,7 @@ def queue_emails_when_unscheduled(proposal_id, unscheduled_by)
   interested = interests.map(:name)
 
   
-  if(proposal[:submitter_email]) then
+  if(proposal[:submitter_email] and proposal[:submitter_email] != '') then
     subject = "Your BoF '#{proposal[:title]}' has been removed from the schedule"
     proposer_tmpl = ERB.new(File.read('email-templates/unscheduled-to_proposer.erb'))
     mail = Mail.new(
@@ -127,7 +127,7 @@ def queue_emails_when_unscheduled(proposal_id, unscheduled_by)
     mail.save
   end
 
-  if(proposal[:submitter_phone]) then
+  if(proposal[:submitter_phone] and proposal[:submitter_phone] != '') then
     text_tmpl = ERB.new(File.read('sms-templates/unscheduled-to_proposer.erb'))
 
     text = Text.new(
@@ -173,7 +173,7 @@ def queue_emails_when_merged(proposal_id, merge_source_id, merged_by)
   interests = Interest.where(proposal_id: merge_source_id)
 
   # notify whoever proposed the merge source about the merge
-  if(merge_source[:submitter_email]) then
+  if(merge_source[:submitter_email] and merge_source[:submitter_email] != '') then
     subject = "Your BoF '#{merge_source[:title]}' has been merged with another session"
     proposer_tmpl = ERB.new(File.read('email-templates/merged-to_proposer.erb'))
     mail = Mail.new(
@@ -184,7 +184,7 @@ def queue_emails_when_merged(proposal_id, merge_source_id, merged_by)
     mail.save
   end
 
-  if(merge_source[:submitter_phone]) then
+  if(merge_source[:submitter_phone] and merge_source[:submitter_phone] != '') then
     text_tmpl = ERB.new(File.read('sms-templates/merged-to_proposer.erb'))
 
     text = Text.new(
@@ -295,7 +295,7 @@ def queue_interest_email_to_proposer(proposal_id, selfschedule_delay, base_url)
   proposal.scheduling_token = token
   proposal.save
 
-  if(proposal[:submitter_email]) then
+  if(proposal[:submitter_email] and proposal[:submitter_email] != '') then
     subject = "The BoF '#{proposal[:title]}' has reached enough interest to be scheduled"
     tmpl = ERB.new(File.read('email-templates/interest-to_proposer.erb'))
     html_tmpl = ERB.new(File.read('email-templates/interest-to_proposer.html.erb'))
@@ -313,7 +313,7 @@ def queue_interest_email_to_proposer(proposal_id, selfschedule_delay, base_url)
     mail.save
   end
 
-  if(proposal[:submitter_phone]) then
+  if(proposal[:submitter_phone] and proposal[:submitter_phone] != '') then
     text_tmpl = ERB.new(File.read('sms-templates/interest-to_proposer.erb'))
 
     text = Text.new(
@@ -366,7 +366,7 @@ def queue_reminder_emails(proposal_id, reminder_minutes)
   interests = Interest.where(proposal_id: proposal_id)
   interested = interests.map(:name)
 
-  if(proposal[:submitter_email]) then
+  if(proposal[:submitter_email] and proposal[:submitter_email] != '') then
     subject = "Your BoF '#{proposal[:title]}' is starting soon!"
     proposer_tmpl = ERB.new(File.read('email-templates/reminder-to_proposer.erb'))
 
@@ -378,7 +378,7 @@ def queue_reminder_emails(proposal_id, reminder_minutes)
     mail.save
   end
   
-  if(proposal[:submitter_phone]) then
+  if(proposal[:submitter_phone] and proposal[:submitter_phone] != '') then
     text_tmpl = ERB.new(File.read('sms-templates/reminder-to_proposer.erb'))
 
     text = Text.new(
