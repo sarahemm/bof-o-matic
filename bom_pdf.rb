@@ -3,12 +3,23 @@ require 'prawn'
 # extend the Proposal class to add generation of PDFs
 class Proposal
   # generate a PDF and save it to a file, if no filename passed then generates a standard spool filename
-  def to_pdf(filename:)
+  def to_pdf(filename:, font:)
     # hide warnings about i18n, which using non-breaking spaces triggers
     Prawn::Fonts::AFM.hide_m17n_warning = true
 
     proposal = self
     Prawn::Document.generate(filename, page_layout: :landscape) do
+      # set up external fonts so that we can render non-ASCII characters (if specified)
+      if(font) then
+        font_families.update(
+          'label' => {
+            normal: font
+          }
+        )
+
+        font 'label'
+      end
+
       # title
       font_size 72
       text_box proposal[:title], at: [0, 72*7.5], height: 50, width: 72*10, overflow: :shrink_to_fit, disable_wrap_by_char: true, align: :center

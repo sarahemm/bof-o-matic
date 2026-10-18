@@ -29,6 +29,7 @@ configure do
   set :conference_end_time, Time.parse(CFG['conference_ends'])
   set :slot_length, CFG['slot_length']
   set :generate_pdfs, CFG['generate_pdfs']
+  set :pdf_font, CFG['pdf_font']
   set :generate_pngs, CFG['generate_pngs']
   set :png_width, CFG['png_width']
   set :png_height, CFG['png_height']
@@ -119,7 +120,7 @@ post '/proposals/new' do
   }
   new_id = DB[:proposals].insert(data)
 
-  Proposal[new_id].to_pdf filename: "pdf-spool/#{Time.now.to_i.to_s}-proposal#{new_id}.pdf" if settings.generate_pdfs and settings.proposal_labels
+  Proposal[new_id].to_pdf filename: "pdf-spool/#{Time.now.to_i.to_s}-proposal#{new_id}.pdf", font: settings.pdf_font if settings.generate_pdfs and settings.proposal_labels
   Proposal[new_id].to_label_png settings: settings, filename: "png-spool/#{Time.now.to_i.to_s}-proposal#{new_id}.png" if settings.generate_pngs and settings.proposal_labels
 
   redirect "/proposals/#{new_id}"
@@ -313,7 +314,7 @@ post '/grid' do
   }
   DB[:schedules].insert(data)
 
-  Proposal[params[:proposal_id]].to_pdf filename: "pdf-spool/#{Time.now.to_i.to_s}-proposal#{params[:id]}.pdf" if settings.generate_pdfs
+  Proposal[params[:proposal_id]].to_pdf filename: "pdf-spool/#{Time.now.to_i.to_s}-proposal#{params[:id]}.pdf", font: settings.pdf_font if settings.generate_pdfs
   Proposal[params[:proposal_id]].to_label_png settings: settings, filename: "png-spool/#{Time.now.to_i.to_s}-proposal#{params[:proposal_id]}.png" if settings.generate_pngs
 
   queue_emails_when_scheduled(params[:proposal_id])
@@ -325,7 +326,7 @@ end
 get '/proposals/:id/print' do
   require_logged_in
 
-  Proposal[params[:id]].to_pdf filename: "pdf-spool/#{Time.now.to_i.to_s}-proposal#{params[:id]}.pdf" if settings.generate_pdfs
+  Proposal[params[:id]].to_pdf filename: "pdf-spool/#{Time.now.to_i.to_s}-proposal#{params[:id]}.pdf", font: settings.pdf_font if settings.generate_pdfs
   Proposal[params[:id]].to_label_png settings: settings, filename: "png-spool/#{Time.now.to_i.to_s}-proposal#{params[:proposal_id]}.png" if settings.generate_pngs
 
   redirect "/proposals/#{params[:id]}"

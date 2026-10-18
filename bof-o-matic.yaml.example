@@ -15,6 +15,7 @@ selfschedule_delay: 15
 proposal_labels: true
 
 generate_pdfs: false
+pdf-font: 'labelpdf.ttf'
 
 generate_pngs: true
 png_width: 1650
