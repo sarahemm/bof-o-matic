@@ -53,6 +53,16 @@ set :session_secret, CFG['session_secret']
 set :port, 4590
 set :method_override, true
 
+# Development convenience: with BOM_DEV_USER set, every request is treated as
+# that scheduler, so a local stack needs neither the OIDC proxy nor /login.
+# Never set this anywhere the app is reachable by other people.
+DEV_USER = ENV['BOM_DEV_USER']
+warn "WARNING: BOM_DEV_USER is set, all requests authenticate as '#{DEV_USER}'" if DEV_USER
+
+before do
+  session[:user] ||= DEV_USER if DEV_USER
+end
+
 helpers do
   def nav_link(uri: '', text: '', extra_class: '')
     haml_tag :li, class: 'nav-item'

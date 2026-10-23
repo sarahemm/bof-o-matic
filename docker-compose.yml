@@ -11,20 +11,68 @@ services:
     expose:
       - 4590
     networks:
-      - nginx-proxy
-  
-  proxy:
-    container_name: proxy
-    image: nginx:alpine
-    ports:
-      - 80:80
-    volumes:
-      - ./nginx.conf:/etc/nginx/nginx.conf:ro
-    networks:
-      - nginx-proxy
-    depends_on:
       - bof-o-matic
 
+  oauth2-proxy:
+    # Caddy routes to this container by name, the same way it reaches
+    # bookstack and registration-production.
+    container_name: bof-o-matic-auth
+    image: quay.io/oauth2-proxy/oauth2-proxy:v7.12.0
+    restart: unless-stopped
+    env_file:
+      - oauth2-proxy.env
+    command:
+      - --http-address=0.0.0.0:4180
+      - --upstream=http://bof-o-matic:4590
+      # Drupal simple_oauth 6.x does not serve
+      # /.well-known/openid-configuration, so discovery is off and every
+      # endpoint is given explicitly (same as the wiki's OIDC_ISSUER_DISCOVER=false).
+      - --provider=oidc
+      - --provider-display-name=Hackers Conference Account
+      - --skip-oidc-discovery=true
+      - --login-url=https://registration.hackersconference.org/oauth/authorize
+      - --redeem-url=https://registration.hackersconference.org/oauth/token
+      - --profile-url=https://registration.hackersconference.org/oauth/userinfo
+      - --oidc-jwks-url=https://registration.hackersconference.org/oauth/jwks
+      - --scope=openid email profile roles
+      - --email-domain=*
+      # simple_oauth_companion puts Drupal roles in the 'roles' claim.
+      # Uncomment --allowed-group lines to restrict access to those roles.
+      - --oidc-groups-claim=roles
+      # - --allowed-group=steering_committee_member
+      # - --allowed-group=volunteer
+      - --session-store-type=cookie
+      - --cookie-secure=true
+      - --cookie-samesite=lax
+      - --cookie-expire=12h
+      # Caddy terminates TLS and proxies in over plain HTTP; trust its
+      # X-Forwarded-* headers so redirect URLs come out as https://.
+      - --reverse-proxy=true
+      - --set-xauthrequest=true
+      - --pass-basic-auth=false
+      - --pass-user-headers=true
+      - --skip-provider-button=true
+      # Public, token-authenticated endpoints attendees hit without a
+      # registration account. Drop the ones you want behind SSO.
+      - --skip-auth-route=GET=^/proposals/[0-9]+/interest$$
+      - --skip-auth-route=POST=^/proposals/[0-9]+/interest$$
+      - --skip-auth-route=^/selfschedule
+      - --skip-auth-route=^/api/
+      - --skip-auth-route=^/assets/
+    networks:
+      - bof-o-matic
+      - caddy-proxy
+    depends_on:
+      - bof-o-matic
+    # If bof-o-matic runs on a different host than Caddy (likely — the label
+    # printer is USB-attached), drop the caddy-proxy network above, publish
+    # the port here, and point Caddy at the host instead:
+    #   reverse_proxy https://bofs.hackersconference.org -> 10.0.0.x:4180
+    # ports:
+    #   - 4180:4180
+
 networks:
-  nginx-proxy:
+  bof-o-matic:
     driver: bridge
+  caddy-proxy:
+    external: true

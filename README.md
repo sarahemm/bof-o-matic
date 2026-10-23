@@ -59,3 +59,82 @@ Bus 002 Device 001: ID 1d6b:0003 Linux Foundation 3.0 root hub
 1. Start the containers: `docker compose up -d`
 
 Note: This container initializes the DB directly inside itself during build; if you rebuild the container, you *will* lose your DB unless you take steps to preserve it.
+
+## Authentication with oauth2-proxy (OIDC)
+
+`docker-compose.yml` puts [oauth2-proxy](https://oauth2-proxy.github.io/oauth2-proxy/)
+in front of bof-o-matic, authenticating against the Drupal registration site's
+OpenID Connect provider (`simple_oauth`), the same provider the wiki uses:
+
+```
+caddy-proxy (:443) -> bof-o-matic-auth:4180 -> bof-o-matic:4590
+                           |
+                           +-- OIDC --> registration.hackersconference.org
+```
+
+1. In Drupal, add an OAuth consumer at
+   `/admin/config/services/consumer`:
+   - **Label:** `BoF-o-matic`
+   - **Redirect URI:** `https://bofs.hackersconference.org/oauth2/callback`
+   - **Scopes:** `openid`, `email`, `profile`, `roles`
+   - **Confidential:** yes — note the client ID and secret
+1. Create a DNS A record for `bofs.hackersconference.org`.
+1. Add the site to the Caddyfile in `hackers-infrastructure`:
+
+   ``` caddyfile
+   bofs.hackersconference.org {
+     reverse_proxy bof-o-matic-auth:4180
+   }
+   ```
+
+1. Copy `oauth2-proxy.env.example` to `oauth2-proxy.env` and fill in the client
+   ID/secret and a cookie secret
+   (`openssl rand -base64 32 | tr -- '+/' '-_'`).
+1. `docker compose up -d`
+
+Notes:
+
+- Drupal `simple_oauth` 6.x does not serve
+  `/.well-known/openid-configuration`, so oauth2-proxy runs with
+  `--skip-oidc-discovery` and explicit `/oauth/authorize`, `/oauth/token`,
+  `/oauth/userinfo` and `/oauth/jwks` URLs — the same arrangement as the
+  wiki's `OIDC_ISSUER_DISCOVER=false`.
+- `simple_oauth_companion` adds Drupal roles to the `roles` claim. Uncomment
+  the `--allowed-group` arguments in `docker-compose.yml` to limit access to
+  specific roles (e.g. `steering_committee_member`); without them, any
+  registration account can get in.
+- The authenticated user arrives in `X-Forwarded-User` / `X-Forwarded-Email`.
+  bof-o-matic does not read those yet, so schedulers still log in at `/login`
+  behind the SSO wall.
+- Routes attendees reach without a registration account (interest sign-up,
+  self-scheduling tokens, the API, static assets) are listed as
+  `--skip-auth-route` arguments. Trim that list to tighten access.
+- oauth2-proxy joins the external `caddy-proxy` network, which requires Caddy
+  and bof-o-matic on the same Docker host. If the label printer keeps
+  bof-o-matic on separate hardware, publish port 4180 instead (see the
+  commented block in `docker-compose.yml`) and point Caddy at that host.
+- The production stack no longer runs the `nginx` proxy container; the
+  nginx-fronted stack lives on in `docker-compose.local.yml` for local use.
+
+## Local development with Docker
+
+`docker-compose.local.yml` is the plain stack — nginx in front of the app on
+port 80, no oauth2-proxy and no OIDC:
+
+``` bash
+cp bof-o-matic.yaml.example bof-o-matic.yaml   # set base_url to http://localhost
+docker compose -f docker-compose.local.yml up -d
+```
+
+To skip the `/login` prompt as well, set `BOM_DEV_USER` on the `bof-o-matic`
+service:
+
+``` yaml
+    environment:
+      BOM_DEV_USER: sysop
+```
+
+Every request is then authenticated as that scheduler. The variable is unset
+everywhere else, so the production stack still requires both the OIDC login
+and `/login`. **Never set `BOM_DEV_USER` on a host other people can reach** —
+it disables authentication completely.
