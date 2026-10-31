@@ -659,6 +659,25 @@ get '/api/v1/proposals' do
   proposals.to_json
 end
 
+post '/api/v1/proposals/new' do
+  require_api_access :public
+
+  json_data = JSON.parse(request.body.read)
+  data = {
+    :submitted_by => json_data['submitted_by'],
+    :submitter_email => json_data['submitter_email'],
+    :submitter_phone => json_data['submitter_phone'],
+    :title => json_data['session_title'],
+    :description => json_data['session_description'],
+    :scheduler_notes => json_data['scheduler_notes'],
+  }
+  new_id = DB[:proposals].insert(data)
+
+  Proposal[new_id].to_pdf filename: "pdf-spool/#{Time.now.to_i.to_s}-proposal#{new_id}.pdf", font: settings.pdf_font if settings.generate_pdfs and settings.proposal_labels
+  Proposal[new_id].to_label_png settings: settings, filename: "png-spool/#{Time.now.to_i.to_s}-proposal#{new_id}.png" if settings.generate_pngs and settings.proposal_labels
+end
+
+
 get '/api/v1/proposals/:id' do
   require_api_access :view_only
 
