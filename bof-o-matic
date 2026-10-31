@@ -671,6 +671,24 @@ get '/api/v1/proposals/:id/interests' do
   Interest.where(proposal_id: params[:id]).map {|interest| [interest[:id], interest.to_hash(include_scheduler_fields: api_access_level(:scheduler))]}.to_h.to_json
 end
 
+post '/api/v1/proposals/:id/interests' do
+  require_api_access :public
+
+  json_data = JSON.parse(request.body.read)
+  data = {
+    :proposal_id => params[:id],
+    :name => json_data['name'],
+    :email => json_data['email'],
+    :phone => json_data['phone'],
+  }
+  data[:submitted_at] = Time.now
+  DB[:interests].insert(data)
+
+  if(Interest.where(proposal_id: params[:id]).count == settings.interest_threshold) then
+    queue_interest_email_to_proposer(params[:id], settings.selfschedule_delay, settings.base_url)
+  end
+end
+
 get '/api/v1/rooms' do
   require_api_access :scheduler
 
