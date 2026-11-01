@@ -678,6 +678,8 @@ post '/api/v1/proposals/new' do
 
   Proposal[new_id].to_pdf filename: "pdf-spool/#{Time.now.to_i.to_s}-proposal#{new_id}.pdf", font: settings.pdf_font if settings.generate_pdfs and settings.proposal_labels
   Proposal[new_id].to_label_png settings: settings, filename: "png-spool/#{Time.now.to_i.to_s}-proposal#{new_id}.png" if settings.generate_pngs and settings.proposal_labels
+
+  queue_emails_when_proposed(new_id, settings.base_url, settings.use_short_urls) if settings.confirm_new_proposals
 end
 
 
