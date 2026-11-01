@@ -18,7 +18,7 @@ proposal_labels: true
 confirm_new_proposals: true
 
 generate_pdfs: false
-pdf-font: 'labelpdf.ttf'
+pdf_font: 'labelpdf.ttf'
 
 generate_pngs: true
 png_width: 1650
