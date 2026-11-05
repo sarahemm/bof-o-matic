@@ -14,8 +14,13 @@ require 'add_to_calendar'
 
 # trigger a mail or SMS run immediately, rather than waiting for the next poll
 def trigger_run(type)
-  daemon_pid = `pidof -sx bom-#{type}d`.to_i
-  Process.kill("SIGUSR1", daemon_pid) if daemon_pid > 0
+  begin
+    daemon_pid = `pidof -sx bom-#{type}d`.to_i
+    Process.kill("SIGUSR1", daemon_pid) if daemon_pid > 0
+  rescue Errno::ENOENT
+    # if we don't have 'pidof' (e.g. we're not on Linux) we just won't trigger
+    # the run. it'll happen soon enough on its own anyways.
+  end
 end
 
 # confirm to the proposer that their proposal was received
