@@ -1,4 +1,7 @@
 require 'rmagick'
+require 'pp'
+
+# TODO: ugh, what a mess. I'm scared I'm going to break the whole thing every time I touch it, which is a good sign this could probably use an overhaul.
 
 # extend the Proposal class to generate PNGs for printing labels
 class Proposal
@@ -38,10 +41,38 @@ class Proposal
     end
 
     # draw the description in the lower left
-    desc = BomPngHelpers::fit_text(self[:description], settings.png_font, settings.png_width*0.04, settings.png_width/2)
+    #
+    # TODO: this is such a hack but it's a day before the thing, so it works for now.
+    # START OF TERRIBLE HACK
+    best_size = 0
+    [settings.png_width*0.04, settings.png_width*0.03, settings.png_width*0.02].each do |trial_size|
+      size = 512
+      desc = BomPngHelpers::fit_text(self[:description], settings.png_font, trial_size, settings.png_width/2)
+
+      # auto-size the font down to make it fit
+      draw.pointsize = size
+      metrics = draw.get_multiline_type_metrics(desc)
+      puts "Init t#{trial_size} s#{size}... w#{metrics.width} h#{metrics.height}"
+      pp desc
+      while(size > 5 and (metrics.width > settings.png_width/2 or metrics.height > settings.png_height/4)) do
+        size -= 5
+        draw.pointsize = size
+        metrics = draw.get_multiline_type_metrics(desc)
+        puts "Testing #{size}... w#{metrics.width} h#{metrics.height}"
+      end
+      puts "#{size} fits!"
+      best_size = size if size > best_size
+    end
+    puts "Settled on #{best_size}"
+    draw.pointsize = best_size
+    desc = BomPngHelpers::fit_text(self[:description], settings.png_font, best_size, settings.png_width/2)
+
+    # END OF TERRIBLE HACK
+    
+    # actually draw the description
     img.annotate(draw, settings.png_width, settings.png_height-25, 25, 0, desc) do
       draw.gravity = Magick::SouthWestGravity
-      draw.pointsize = settings.png_width*0.04
+      #draw.pointsize = settings.png_width*0.02
       draw.fill = "#000000#"
       draw.font_weight = Magick::BoldWeight
     end
