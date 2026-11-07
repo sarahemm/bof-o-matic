@@ -6,11 +6,28 @@ services:
     devices:
      - /dev/usb/lp0:/dev/usb/lp0
     volumes:
-     - ./bof-o-matic.sqlite3:/usr/src/app/bof-o-matic.sqlite3
-     - ./bof-o-matic.yaml:/usr/src/app/bof-o-matic.yaml:ro
+     - /opt/bof-o-matic/bof-o-matic.sqlite3:/usr/src/app/bof-o-matic.sqlite3
+     - /opt/bof-o-matic/bof-o-matic.yaml:/usr/src/app/bof-o-matic.yaml
     expose:
       - 4590
     networks:
+<<<<<<< Updated upstream
+=======
+      - nginx-proxy
+
+  proxy:
+    container_name: proxy
+    image: nginx:alpine
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - /etc/letsencrypt:/etc/letsencrypt
+    networks:
+      - nginx-proxy
+    depends_on:
+>>>>>>> Stashed changes
       - bof-o-matic
 
   oauth2-proxy:
@@ -72,7 +89,12 @@ services:
     #   - 4180:4180
 
 networks:
+<<<<<<< Updated upstream
   bof-o-matic:
     driver: bridge
   caddy-proxy:
     external: true
+=======
+  nginx-proxy:
+    driver: bridge
+>>>>>>> Stashed changes
