@@ -1,29 +1,32 @@
 %h2= "Submit BoF Proposal"
+- if @message
+  %h3.text-danger
+    = @message
 %form#proposalform{method: 'post', onsubmit: 'return validateProposal();'}
   
   %div#name-alert{tabindex: -1}
   %div.mb-3
     %label.form-label{for: 'name'} Your Name:
-    %input.form-control#name{name: 'name'}
+    %input.form-control#name{name: 'name', value: params[:name]}
   %div#email-alert{tabindex: -1}
   %div.mb-3
     %label.form-label{for: 'email'} Your Email:
-    %input.form-control#email{name: 'email'}
+    %input.form-control#email{name: 'email', value: params[:email]}
   %div#phone-alert{tabindex: -1}
   %div.mb-3
     %label.form-label{for: 'phone'} Your Phone Number (optional, for SMS notifications):
-    %input.form-control#phone{name: 'phone'}
+    %input.form-control#phone{name: 'phone', value: params[:phone]}
   %div#title-alert{tabindex: -1}
   %div.mb-3
     %label.form-label{for: 'title'} BoF Title:
-    %input.form-control#title{name: 'title'}
+    %input.form-control#title{name: 'title', value: params[:title]}
   %div#description-alert{tabindex: -1}
   %div.mb-3
     %label.form-label{for: 'description'} BoF Description:
-    %input.form-control#description{name: 'description'}
+    %input.form-control#description{name: 'description', value: params[:description]}
   %div.mb-3
     %label.form-label{for: 'notes'} Notes for the scheduler (e.g. 'quiet room', 'outside', etc.):
-    %input.form-control#notes{name: 'notes'}
+    %input.form-control#notes{name: 'notes', value: params[:notes]}
 
 
   %input.btn.btn-primary.mb-3{type: 'submit', value: 'Submit Proposal'}
