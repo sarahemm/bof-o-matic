@@ -241,7 +241,7 @@ end
 delete '/schedules/:id' do
   require_logged_in
 
-  Proposal[params[:proposal_id]].to_cancel_label_png settings: settings, filename: "png-spool/#{Time.now.to_i.to_s}-proposal#{params[:proposal_id]}-cancel.png" if settings.generate_pngs
+  Proposal[params[:proposal_id]].to_coverup_label_png settings: settings, filename: "png-spool/#{Time.now.to_i.to_s}-proposal#{params[:proposal_id]}-cancel.png", reason: "Removed from schedule" if settings.generate_pngs
 
   Schedule[params[:id]].destroy
 
@@ -253,6 +253,8 @@ end
 # for destroying a BoF
 delete '/proposals/:id' do
   require_logged_in
+
+  Proposal[params[:id]].to_coverup_label_png settings: settings, filename: "png-spool/#{Time.now.to_i.to_s}-proposal#{params[:id]}-destroy.png", reason: "Deleted by scheduler" if settings.generate_pngs
 
   Proposal[params[:id]].interest_dataset.each do |interest|
     interest.destroy
@@ -347,6 +349,8 @@ post '/grid' do
 
   Proposal[params[:proposal_id]].to_pdf filename: "pdf-spool/#{Time.now.to_i.to_s}-proposal#{params[:id]}.pdf", font: settings.pdf_font if settings.generate_pdfs
   Proposal[params[:proposal_id]].to_label_png settings: settings, filename: "png-spool/#{Time.now.to_i.to_s}-proposal#{params[:proposal_id]}.png" if settings.generate_pngs
+  Proposal[params[:proposal_id]].to_coverup_label_png settings: settings, filename: "png-spool/#{Time.now.to_i.to_s}-proposal#{params[:proposal_id]}-proposalcoverup.png", reason: "Now scheduled" if settings.generate_pngs
+
 
   queue_emails_when_scheduled(params[:proposal_id])
   session.delete :scheduling_token
@@ -357,8 +361,10 @@ end
 get '/proposals/:id/print' do
   require_logged_in
 
-  Proposal[params[:id]].to_pdf filename: "pdf-spool/#{Time.now.to_i.to_s}-proposal#{params[:id]}.pdf", font: settings.pdf_font if settings.generate_pdfs
-  Proposal[params[:id]].to_label_png settings: settings, filename: "png-spool/#{Time.now.to_i.to_s}-proposal#{params[:proposal_id]}.png" if settings.generate_pngs
+  proposal = Proposal[params[:id]]
+  proposal.to_pdf filename: "pdf-spool/#{Time.now.to_i.to_s}-proposal#{params[:id]}.pdf", font: settings.pdf_font if settings.generate_pdfs
+  proposal.to_label_png settings: settings, filename: "png-spool/#{Time.now.to_i.to_s}-proposal#{params[:proposal_id]}.png" if settings.generate_pngs
+  proposal.to_coverup_label_png settings: settings, filename: "png-spool/#{Time.now.to_i.to_s}-proposal#{params[:proposal_id]}-proposalcoverup.png", reason: "Now scheduled" if settings.generate_pngs and proposal[:room_id]
 
   redirect "/proposals/#{params[:id]}"
 end
@@ -379,8 +385,10 @@ post '/bulk-print' do
   require_logged_in
 
   params[:id].each do |id|
-    Proposal[id].to_pdf filename: "pdf-spool/#{Time.now.to_i.to_s}-proposal#{id}.pdf", font: settings.pdf_font if settings.generate_pdfs
-    Proposal[id].to_label_png settings: settings, filename: "png-spool/#{Time.now.to_i.to_s}-proposal#{id}.png" if settings.generate_pngs
+    proposal = Proposal[id]
+    proposal.to_pdf filename: "pdf-spool/#{Time.now.to_i.to_s}-proposal#{id}.pdf", font: settings.pdf_font if settings.generate_pdfs
+    proposal.to_label_png settings: settings, filename: "png-spool/#{Time.now.to_i.to_s}-proposal#{id}.png" if settings.generate_pngs
+    proposal.to_coverup_label_png settings: settings, filename: "png-spool/#{Time.now.to_i.to_s}-proposal#{params[:proposal_id]}-proposalcoverup.png", reason: "Now scheduled" if settings.generate_pngs and proposal[:room_id]
   end
 
   redirect "/"

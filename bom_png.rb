@@ -93,7 +93,7 @@ class Proposal
 
   # generate a PNG label in the spool directory for a given cancellation
   # needs to be called before the cancellation is processed, so that it still has access to room/time!
-  def to_cancel_label_png(settings:, filename:)
+  def to_coverup_label_png(settings:, filename:, reason:)
     img = Magick::Image.new(settings.png_width, settings.png_height)
     draw = Magick::Draw.new
     draw.interline_spacing = 20
@@ -101,7 +101,7 @@ class Proposal
     draw.pointsize = 1024
 
     # draw the cancelled title in the lower left
-    desc = BomPngHelpers::fit_text("Removed from schedule: #{self[:title]}", settings.png_font, settings.png_width*0.04, settings.png_width/2)
+    desc = BomPngHelpers::fit_text("#{reason}: #{self[:title]}", settings.png_font, settings.png_width*0.04, settings.png_width/2)
     img.annotate(draw, settings.png_width, settings.png_height-25, 25, 0, desc) do
       draw.gravity = Magick::SouthWestGravity
       draw.pointsize = settings.png_width*0.04
@@ -111,7 +111,11 @@ class Proposal
 
     # draw the time it should be added to in the lower right
     # along with the URL
-    time = "#{self.schedule[:start_time].strftime("%a %H:%M")} - #{self.schedule.room[:room_name]}"
+    time = 'PROPOSAL'
+    if(self.schedule) then
+      time = "#{self.schedule[:start_time].strftime("%a %H:%M")} - #{self.schedule.room[:room_name]}"
+    end
+
     img.annotate(draw, settings.png_width, settings.png_height-25, 25, 0, time) do
       draw.gravity = Magick::SouthEastGravity
       draw.pointsize = settings.png_width*0.03
