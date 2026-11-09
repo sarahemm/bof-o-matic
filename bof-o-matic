@@ -363,6 +363,29 @@ get '/proposals/:id/print' do
   redirect "/proposals/#{params[:id]}"
 end
 
+get '/bulk-print' do
+  require_logged_in
+
+  @proposals = Proposal.association_left_join(:interest)
+    .select(Sequel[:proposals][:id], :title, :description, :submitted_by, :name, :room_id)
+    .association_left_join(:schedule)
+    .select_more{Sequel.as(count(:name), :count)}
+    .group(:title)
+
+  haml :bulk_print
+end
+
+post '/bulk-print' do
+  require_logged_in
+
+  params[:id].each do |id|
+    Proposal[id].to_pdf filename: "pdf-spool/#{Time.now.to_i.to_s}-proposal#{id}.pdf", font: settings.pdf_font if settings.generate_pdfs
+    Proposal[id].to_label_png settings: settings, filename: "png-spool/#{Time.now.to_i.to_s}-proposal#{id}.png" if settings.generate_pngs
+  end
+
+  redirect "/"
+end
+
 get '/rooms' do
   require_logged_in
 

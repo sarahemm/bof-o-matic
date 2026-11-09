@@ -1,0 +1,25 @@
+%h2= "Bulk Printing"
+%form{method: :post}
+  %table.table.table-striped
+    %thead
+      %tr
+        %th{scope: 'col'} Title
+        %th{scope: 'col'} Proposed By
+        %th{scope: 'col'} # Interested
+        %th{scope: 'col'} Status
+        %th{scope: 'col'} Re-print
+
+    - @proposals.each do |proposal|
+      %tr
+        %td= proposal[:title]
+        %td= proposal[:submitted_by]
+        %td= proposal[:count]
+        %td
+          - if(proposal[:room_id])
+            = "Scheduled"
+          - else
+            = "Gathering Interest"
+        %td
+          %input.form-check-input{type: :checkbox, name: "id[]", value: proposal[:id]}
+
+  %button.btn.btn-primary{type: :submit} Re-print Selected
