@@ -133,6 +133,12 @@ post '/proposals/new' do
     return haml :proposal_add
   end
 
+  # duplicates can get proposed if they double-click submit, prevent that
+  if(Proposal.where(title: params[:title]).first) then
+    @message = "Unable to create proposal, there is already an existing one with the same title."
+    return haml :proposal_add
+  end
+
   data = {
     :submitted_by => params[:name],
     :submitter_email => email,
