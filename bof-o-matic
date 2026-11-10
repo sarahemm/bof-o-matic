@@ -702,10 +702,10 @@ end
 get '/api/v1/proposals' do
   require_api_access :view_only
 
-  proposals = {}
+  proposals = []
 
   Proposal.each do |proposal|
-    proposals[proposal[:id]] = proposal.to_hash(include_scheduler_fields: api_access_level(:scheduler))
+    proposals << proposal.to_hash(include_scheduler_fields: api_access_level(:scheduler))
   end
 
   proposals.to_json
@@ -741,7 +741,13 @@ end
 get '/api/v1/proposals/:id/interests' do
   require_api_access :view_only
 
-  Interest.where(proposal_id: params[:id]).map {|interest| [interest[:id], interest.to_hash(include_scheduler_fields: api_access_level(:scheduler))]}.to_h.to_json
+  interests = []
+
+  Interest.where(proposal_id: params[:id]).each do |interest|
+    interests << interest.to_hash(include_scheduler_fields: api_access_level(:scheduler))
+  end
+
+  interests.to_json
 end
 
 post '/api/v1/proposals/:id/interests' do
