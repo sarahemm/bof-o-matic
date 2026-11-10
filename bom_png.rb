@@ -1,5 +1,4 @@
 require 'rmagick'
-require 'pp'
 
 # TODO: ugh, what a mess. I'm scared I'm going to break the whole thing every time I touch it, which is a good sign this could probably use an overhaul.
 
@@ -53,7 +52,6 @@ class Proposal
       draw.pointsize = size
       metrics = draw.get_multiline_type_metrics(desc)
       puts "Init t#{trial_size} s#{size}... w#{metrics.width} h#{metrics.height}"
-      pp desc
       while(size > 5 and (metrics.width > settings.png_width/2 or metrics.height > settings.png_height/4)) do
         size -= 5
         draw.pointsize = size
