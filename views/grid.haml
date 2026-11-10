@@ -41,7 +41,7 @@
   .modal.fade#scheduleModal{tabIndex: -1, role: :dialog}
     .modal-dialog{role: :document}
       .modal-content
-        %form.needs-validation{method: :post}
+        %form.needs-validation{method: :post, onsubmit: 'document.getElementById("submitSchedule").disabled = true;'}
           .modal-header
             %h5.modal-title#ScheduleModalLabel
               %div#scheduleTitle Schedule Sesson
@@ -62,7 +62,7 @@
           .modal-footer
             %button.btn.btn-secondary{type: :button, 'data-bs-dismiss' => 'modal'}
               Cancel
-            %button.btn.btn-primary{type: :submit}
+            %button.btn.btn-primary#submitSchedule{type: :submit}
               Schedule Session
 
   :javascript

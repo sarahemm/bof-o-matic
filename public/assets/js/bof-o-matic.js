@@ -32,6 +32,10 @@ function validateInterest() {
     alertbox.innerHTML = "";
   }
 
+  if(rv == true) {
+    document.getElementById('submit').disabled = true;
+  }
+
   return rv;
 }
 
@@ -88,6 +92,10 @@ function validateProposal() {
     rv = false;
   } else {
     alertbox.innerHTML = "";
+  }
+
+  if(rv == true) {
+    document.getElementById('submit').disabled = true;
   }
 
   return rv;
