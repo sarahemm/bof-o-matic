@@ -704,7 +704,12 @@ get '/api/v1/proposals' do
 
   proposals = []
 
-  Proposal.each do |proposal|
+  sort = params[:sort] || 'id'
+  sort_order = sort.to_sym
+  sort_order = Sequel.desc(sort.to_sym) if params[:order] and params[:order].start_with?('desc')
+  pp sort_order, params[:order]
+
+  Proposal.order(sort_order).each do |proposal|
     proposals << proposal.to_hash(include_scheduler_fields: api_access_level(:scheduler))
   end
 
@@ -730,7 +735,6 @@ post '/api/v1/proposals/new' do
 
   queue_emails_when_proposed(new_id, settings.base_url, settings.use_short_urls) if settings.confirm_new_proposals
 end
-
 
 get '/api/v1/proposals/:id' do
   require_api_access :view_only
