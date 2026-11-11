@@ -145,7 +145,8 @@ post '/proposals/new' do
     :submitter_phone => phone,
     :title => params[:title],
     :description => params[:description],
-    :scheduler_notes => params[:notes]
+    :scheduler_notes => params[:notes],
+    :edit_token => File.readlines("token-words.txt").sample(3).map {|t| t.strip}.join(" ")
   }
   new_id = DB[:proposals].insert(data)
 
@@ -279,6 +280,12 @@ post '/proposals/:id/interest' do
   }
   data[:submitted_at] = Time.now
   DB[:interests].insert(data)
+
+  # edits are only allowed until someone is interested
+  # remove the token to indicate no more edits allowed
+  proposal = Proposal[params[:id]]
+  proposal.edit_token = nil
+  proposal.save
 
   if(Interest.where(proposal_id: params[:id]).count == settings.interest_threshold) then
     queue_interest_email_to_proposer(params[:id], settings.selfschedule_delay, settings.base_url)
@@ -718,6 +725,7 @@ end
 post '/api/v1/proposals/new' do
   require_api_access :public
 
+  # TODO: this should be DRYed out with the non-API version
   json_data = JSON.parse(request.body.read)
   data = {
     :submitted_by => json_data['submitted_by'],
@@ -726,6 +734,7 @@ post '/api/v1/proposals/new' do
     :title => json_data['session_title'],
     :description => json_data['session_description'],
     :scheduler_notes => json_data['scheduler_notes'],
+    :edit_token => File.readlines("token-words.txt").sample(3).map {|t| t.strip}.join(" ")
   }
   new_id = DB[:proposals].insert(data)
 
@@ -765,6 +774,12 @@ post '/api/v1/proposals/:id/interests' do
   }
   data[:submitted_at] = Time.now
   DB[:interests].insert(data)
+
+  # edits are only allowed until someone is interested
+  # remove the token to indicate no more edits allowed
+  proposal = Proposal[params[:id]]
+  proposal.edit_token = nil
+  proposal.save
 
   if(Interest.where(proposal_id: params[:id]).count == settings.interest_threshold) then
     queue_interest_email_to_proposer(params[:id], settings.selfschedule_delay, settings.base_url)
