@@ -5,10 +5,6 @@ TODO for bof-o-matic 2026
 - Use jQuery and Bootstrap gems rather than having to manually pull those in
 - More mobile-friendly layout
 - Consider an interstitial "other BoFs look like what you're proposing, are you sure you want to propose this one?" or something, to reduce duplicates
-- Complete the TUI interface for use on a VT-320 at the conference
-
-Work Underway
-- API so other interfaces could be added (CLI, bof-o-matic/X, gopher, packet radio BBS, fax-back, SSTV, etc.)
 
 BUGS
 - None currently outstanding
