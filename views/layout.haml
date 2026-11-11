@@ -41,6 +41,7 @@
             -nav_link uri: '/grid', text: 'Schedule Grid'
             - if !is_logged_in? and !is_self_scheduling?
               -nav_link uri: '/selfschedule', text: 'Self-Scheduling'
+              -nav_link uri: '/selfedit', text: 'Edit Proposal'
             - if is_logged_in?
               %li.nav-item.dropdown
                 %a.nav-link.dropdown-toggle{href: '#', role: :button, 'aria-expanded': false, 'data-bs-toggle': :dropdown } Scheduler Tools

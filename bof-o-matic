@@ -62,6 +62,8 @@ warn "WARNING: BOM_DEV_USER is set, all requests authenticate as '#{DEV_USER}'" 
 
 before do
   session[:user] ||= DEV_USER if DEV_USER
+  # if they navigate away from the edit page with an edit token, get rid of the token
+  session.delete :edit_token if session[:edit_token] and !/\/proposals\/\d+\/edit/.match(request.path_info)
 end
 
 helpers do
@@ -179,6 +181,29 @@ get %r{/(?<id>\d+)} do
   redirect "/proposals/#{params['captures'].first}"
 end
 
+# /selfedit redirects here after validating an edit token
+get '/proposals/:id/edit' do
+  @proposal = Proposal[params[:id]]
+  redirect '/selfedit' unless session[:edit_token] == @proposal[:edit_token]
+
+  haml :proposal_edit
+end
+
+post '/proposals/:id/edit' do
+  proposal = Proposal[params[:id]]
+  redirect '/selfedit' unless session[:edit_token] == proposal.edit_token
+
+  proposal.submitted_by = params[:name]
+  proposal.submitter_email = params[:email]
+  proposal.submitter_phone = params[:phone]
+  proposal.title = params[:title]
+  proposal.description = params[:description]
+  proposal.scheduler_notes = params[:notes]
+  proposal.save
+
+  redirect "/proposals/#{params[:id]}"
+end
+
 # for collecting info to merge a different BoF into this one
 get '/proposals/:id/merge' do
   require_logged_in
@@ -280,12 +305,6 @@ post '/proposals/:id/interest' do
   }
   data[:submitted_at] = Time.now
   DB[:interests].insert(data)
-
-  # edits are only allowed until someone is interested
-  # remove the token to indicate no more edits allowed
-  proposal = Proposal[params[:id]]
-  proposal.edit_token = nil
-  proposal.save
 
   if(Interest.where(proposal_id: params[:id]).count == settings.interest_threshold) then
     queue_interest_email_to_proposer(params[:id], settings.selfschedule_delay, settings.base_url)
@@ -617,6 +636,34 @@ post '/selfschedule' do
   redirect '/grid'
 end
 
+get '/selfedit' do
+  haml :selfedit
+end
+
+get '/selfedit/:token' do
+  haml :selfedit
+end
+
+post '/selfedit' do
+  redirect '/selfedit' unless params[:token]
+
+  # TODO: should be case-insensitive and allow for extra whitespace probably
+  proposal = DB[:proposals].where(edit_token: params[:token]).first
+  if(!proposal) then
+    @message = "Invalid token, please check your records and try again."
+    return haml :selfedit
+  end
+  # check if it has interest, if it does block editing
+  interests = DB[:interests].where(proposal_id: proposal[:id])
+  if(interests.count > 0) then
+    @message = "Unable to edit this session, as it already has interest expressed in it. Please contact a scheduler if this session requires editing."
+    return haml :selfedit
+  end
+  session[:edit_token] = params[:token]
+
+  redirect "/proposals/#{proposal[:id]}/edit"
+end
+
 get '/login' do
   haml :login
 end
@@ -774,12 +821,6 @@ post '/api/v1/proposals/:id/interests' do
   }
   data[:submitted_at] = Time.now
   DB[:interests].insert(data)
-
-  # edits are only allowed until someone is interested
-  # remove the token to indicate no more edits allowed
-  proposal = Proposal[params[:id]]
-  proposal.edit_token = nil
-  proposal.save
 
   if(Interest.where(proposal_id: params[:id]).count == settings.interest_threshold) then
     queue_interest_email_to_proposer(params[:id], settings.selfschedule_delay, settings.base_url)

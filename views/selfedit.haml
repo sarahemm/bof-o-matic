@@ -1,0 +1,10 @@
+%h2 Edit Proposal
+- if @message
+  %h3.text-danger
+    = @message
+%form{method: 'post', action:'/selfedit'}
+  %div.mb-3
+    %label.form-label{for: 'token'} Token:
+    %input.form-control#token{name: 'token', required: true, value: @params[:token]}
+  %button.btn.btn-primary.mb-3{type: 'submit'} Edit Session
+%div.form-text
